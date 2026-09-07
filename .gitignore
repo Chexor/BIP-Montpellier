@@ -1,0 +1,25 @@
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# Build output
+dist/
+build/
+.next/
+.vite/
+
+# Data and temporary files
+*.tmp
+*.log
+.DS_Store
+
+# Large local-only files
+data/raw/
+data/private/
