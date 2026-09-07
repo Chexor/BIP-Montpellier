@@ -33,3 +33,4 @@
 - [x] Initialize workspace structure
 - [x] Select primary idea: MedCheck Handoff
 - [x] Create detailed PillPal team workplan
+- [x] Remove redundant brainstorm and earlier concept docs

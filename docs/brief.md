@@ -12,7 +12,7 @@
 
 Older adults often manage multiple medications with instructions printed in small text on boxes, bottles, and pharmacy labels. These labels can be hard to read, easy to confuse, and difficult to turn into a reliable daily routine. The risk is not only forgetting medication, but misunderstanding unclear instructions, missing expiry dates, mixing up similar packages, or not knowing when to ask a pharmacist or caregiver for help.
 
-Our primary idea is an accessibility-first medication companion for elderly users. The app helps an older adult or caregiver scan a medication package, read a simple explanation, confirm when it should be taken, connect unclear cases to a local pharmacist, and keep emergency contacts and medication information available when needed.
+Our primary idea is PillPal, an accessibility-first medication companion for elderly users. The app helps an older adult or caregiver manage a pillbox routine, scan a medication package, hear a simple explanation, confirm how it fits into the saved schedule, and ask a caregiver or pharmacist for help when anything is unclear.
 
 ## Users and Stakeholders
 
@@ -38,42 +38,35 @@ Our primary idea is an accessibility-first medication companion for elderly user
 
 ## Demo Target
 
-In under three minutes, the jury should see an elderly-user profile, a medication scan, a large-print explanation, uncertainty handling, a medication schedule update, a local pharmacist contact option, and an emergency information screen.
+In under three minutes, the jury should see an elderly-user profile, a daily pillbox view, a medication scan, a large-print explanation, spoken output from the PillPal avatar, uncertainty handling, a schedule match, and a caregiver or pharmacist help path.
 
 Demo story:
 
-1. An elderly user opens their profile and today's medication schedule.
-2. They scan a new medication package or pharmacy label.
-3. The app extracts visible label text and explains it in simple language.
-4. The app clearly marks uncertain text and asks for confirmation.
-5. The user adds the confirmed medication timing to the schedule.
-6. If something is unclear, the app prepares a pharmacist question or contact action.
-7. Emergency contacts and medication information are available from one screen.
+1. An elderly user opens today's pillbox view.
+2. They see morning, noon, evening, and bedtime compartments.
+3. They scan a medication package or pharmacy label.
+4. The app identifies whether the medication is part of the saved pillbox schedule.
+5. PillPal explains the result in simple spoken language.
+6. If something is unclear, the app refuses to guess and prepares a caregiver or pharmacist help action.
 
 ## Primary Idea
 
 ### Working Name
 
-MedCheck Handoff
-
-Note: "MedLens" was considered, but it is already used by healthcare-related products. Keep it off the primary project name unless the team only needs a temporary internal label.
-
-Note: "MedCompanion" was considered, but it is already used by healthcare navigation and AI health explanation products. Avoid it as the public project name.
-
-Note: "MedPilot" was considered, but it is already used by healthcare and home-care management products. Avoid it as the public project name.
-
-Note: "MedMate" was considered, but MedMate and MediMate are already used by telehealth, AI health assistant, medication reminder, care-circle, and medical-record products. Avoid it as the public project name.
+PillPal
 
 ### Short Description
 
-A medication companion for older adults that turns confusing medication packages into clear, confirmed routines, with help from caregivers and pharmacists when needed.
+A friendly medication companion for older adults that connects the daily pillbox, medication package scanning, simple spoken explanations, and caregiver or pharmacist help.
 
 ### Core Features
 
 - Elder profile with language, accessibility preferences, medication schedule, allergies, pharmacy, doctor, caregivers, and emergency contacts
+- Daily pillbox view with morning, noon, evening, and bedtime compartments
 - Medication package or label scanning
-- Plain-language explanation of what the medication appears to be and what the label says
+- Plain-language explanation of what the medication appears to be and how it fits into the saved pillbox schedule
 - Large-print and read-aloud mode
+- PillPal avatar with idle, scanning, speaking, success, uncertain, and help states
 - Confirmation step before adding anything to the medication schedule
 - Clear uncertainty status for unreadable or ambiguous label text
 - Local pharmacist contact path when something is unclear

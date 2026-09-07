@@ -7,9 +7,9 @@ This workspace is prepared for fast hackathon work in Montpellier.
 - `docs/brief.md` - problem statement, constraints, stakeholders, judging criteria
 - `docs/poc.md` - focused proof-of-concept scope, demo flow, architecture, and safety rules
 - `docs/workplan.md` - team roles, deliverables, development blocks, and demo checklist
-- `docs/notes.md` - running notes from talks, mentors, teammates, and testing
 - `docs/tasks.md` - active backlog and day-by-day execution checklist
 - `docs/decisions.md` - important choices, tradeoffs, and assumptions
+- `docs/notes.md` - running notes from talks, mentors, teammates, and testing
 - `src/` - application code, prototypes, notebooks, or scripts
 - `assets/` - images, mockups, icons, slides, and other media
 - `data/` - datasets, exports, samples, and cleaned inputs
