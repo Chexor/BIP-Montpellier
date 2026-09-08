@@ -169,15 +169,6 @@
           
           <!-- TAB: PATIENT TODAY -->
           <section id="tab-patient-today" class="tab-page active">
-            <!-- Calming Welcome Card -->
-            <div class="patient-welcome-card">
-              <div class="pwc-top">
-                <h2 class="pwc-greeting">Good afternoon, Jean 👋</h2>
-                <span class="badge-status-pillbox">Pillbox Connected 🟢</span>
-              </div>
-              <p class="pwc-sub">Everything is calm and on schedule today.</p>
-            </div>
-
             <!-- Spotlight Card: Next Scheduled Dose -->
             <div class="next-dose-spotlight" id="patient-next-dose-card">
               <div class="spotlight-header">
@@ -201,16 +192,22 @@
               </button>
             </div>
 
-            <!-- Physical Pillbox Status (Jean cannot refill, only see compartments) -->
-            <div class="card hardware-compact-card">
+            <!-- Physical Pillbox Status (Jean can only open the current dose) -->
+            <div class="card hardware-compact-card patient-dispenser-card">
               <div class="chassis-header-compact">
-                <span class="chc-title">📦 Your Smart Pillbox</span>
+                <div>
+                  <span class="chc-title">Your Smart Pillbox</span>
+                </div>
                 <span class="chc-batt" id="patient-battery-badge">88% Battery 🔋</span>
               </div>
-              <div class="compartments-container" id="patient-compartments-list">
-                <!-- Dynamically rendered compartments -->
+              <div class="patient-dispenser" id="patient-compartments-list" aria-label="Circular pillbox compartments">
+                <div class="dispenser-center" aria-hidden="true">
+                  <span>NOW</span>
+                  <strong id="patient-current-slot">#3</strong>
+                </div>
+                <!-- Dynamically rendered patient dispenser -->
               </div>
-              <p class="chassis-hint">💡 Compartments are refilled weekly by your caregiver Sophie.</p>
+              <p class="chassis-hint">Refilled weekly by your caregiver Sophie.</p>
             </div>
 
             <!-- Big Quick Action Buttons -->
@@ -244,92 +241,25 @@
               </div>
             </div>
 
-            <!-- Days List -->
-            <div class="schedule-days-list" id="patient-schedule-days">
-              <!-- Monday (Yesterday) -->
-              <div class="schedule-day-card past-day">
-                <div class="sdc-header">
-                  <span class="sdc-day">Monday, Sept 7</span>
-                  <span class="sdc-status-badge badge-complete">✔ All Taken (100%)</span>
-                </div>
-                <div class="sdc-slots">
-                  <div class="sdc-slot completed">
-                    <span class="slot-time">08:00</span>
-                    <span class="slot-med">Dafalgan 1g</span>
-                    <span class="slot-check">✔ Taken 08:04</span>
-                  </div>
-                  <div class="sdc-slot completed">
-                    <span class="slot-time">19:00</span>
-                    <span class="slot-med">Lipitor 20mg</span>
-                    <span class="slot-check">✔ Taken 19:12</span>
-                  </div>
-                </div>
+            <div class="weekly-wheel" id="patient-schedule-days" aria-label="Weekly medication schedule">
+              <div class="wheel-center">
+                <span>THIS WEEK</span>
+                <strong>4 doses</strong>
+                <span id="today-schedule-badge" hidden>Active Dose Ready</span>
               </div>
-
-              <!-- Tuesday (Today) -->
-              <div class="schedule-day-card today-day active">
-                <div class="sdc-header">
-                  <span class="sdc-day">Today (Tuesday, Sept 8)</span>
-                  <span class="sdc-status-badge badge-today" id="today-schedule-badge">Active Dose Ready</span>
-                </div>
-                <div class="sdc-slots">
-                  <div class="sdc-slot completed" id="sched-slot-morning">
-                    <span class="slot-time">08:00</span>
-                    <span class="slot-med">Dafalgan 1g (Box 1)</span>
-                    <span class="slot-check" id="sched-check-morning">✔ Taken 08:02</span>
-                  </div>
-                  <div class="sdc-slot empty">
-                    <span class="slot-time">12:30</span>
-                    <span class="slot-med">Lunch</span>
-                    <span class="slot-check">No medication scheduled</span>
-                  </div>
-                  <div class="sdc-slot active" id="sched-slot-evening">
-                    <span class="slot-time">19:00</span>
-                    <span class="slot-med">Lipitor 20mg (Box 3)</span>
-                    <span class="slot-check" id="sched-check-evening">🟢 Unlocked / Ready</span>
-                  </div>
-                </div>
+              <div class="week-wheel-day today-day active">
+                <strong>Tue</strong>
+                <span class="week-dose completed" id="sched-slot-morning">AM</span>
+                <span class="week-dose empty">NOON</span>
+                <span class="week-dose active" id="sched-slot-evening">PM</span>
+                <span class="week-dose upcoming">NIGHT</span>
               </div>
-
-              <!-- Wednesday (Tomorrow) -->
-              <div class="schedule-day-card upcoming-day">
-                <div class="sdc-header">
-                  <span class="sdc-day">Wednesday, Sept 9</span>
-                  <span class="sdc-status-badge badge-prefilled">Pre-filled by Sophie 👩‍⚕️</span>
-                </div>
-                <div class="sdc-slots">
-                  <div class="sdc-slot upcoming">
-                    <span class="slot-time">08:00</span>
-                    <span class="slot-med">Dafalgan 1g</span>
-                    <span class="slot-check">🔒 Scheduled</span>
-                  </div>
-                  <div class="sdc-slot upcoming">
-                    <span class="slot-time">19:00</span>
-                    <span class="slot-med">Lipitor 20mg</span>
-                    <span class="slot-check">🔒 Scheduled</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Thursday (Upcoming) -->
-              <div class="schedule-day-card upcoming-day">
-                <div class="sdc-header">
-                  <span class="sdc-day">Thursday, Sept 10</span>
-                  <span class="sdc-status-badge badge-prefilled">Pre-filled by Sophie 👩‍⚕️</span>
-                </div>
-                <div class="sdc-slots">
-                  <div class="sdc-slot upcoming">
-                    <span class="slot-time">08:00</span>
-                    <span class="slot-med">Dafalgan 1g</span>
-                    <span class="slot-check">🔒 Scheduled</span>
-                  </div>
-                  <div class="sdc-slot upcoming">
-                    <span class="slot-time">19:00</span>
-                    <span class="slot-med">Lipitor 20mg</span>
-                    <span class="slot-check">🔒 Scheduled</span>
-                  </div>
-                </div>
-              </div>
+              <div class="week-wheel-day"><strong>Wed</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Thu</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Fri</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Sat</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Sun</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Mon</strong><span class="week-dose completed">AM</span><span class="week-dose completed">NOON</span><span class="week-dose completed">PM</span><span class="week-dose completed">NIGHT</span></div>
             </div>
           </section>
 
@@ -515,9 +445,7 @@
                 <span class="timeline-title">Intake Activity Timeline (Today)</span>
                 <span class="timeline-badge-live">LIVE SYNC</span>
               </div>
-              <div id="logs-timeline" class="logs-timeline">
-                <!-- Dynamically rendered timeline entries -->
-              </div>
+              <div id="logs-timeline" class="logs-timeline"></div>
             </div>
           </section>
 

@@ -2413,6 +2413,326 @@ body.role-patient .chassis-hint {
   color: #64748b;
 }
 
+/* Circular dispenser: patient-only hardware view */
+body.role-patient .patient-dispenser-card {
+  padding: 1rem;
+}
+
+body.role-patient .chc-kicker {
+  display: block;
+  color: #64748b;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+body.role-patient .chc-title {
+  display: block;
+}
+
+body.role-patient .patient-dispenser {
+  width: min(100%, 18rem);
+  aspect-ratio: 1;
+  margin: 0.4rem 0 0.7rem;
+  padding: 0;
+  position: relative;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from calc(-90deg + var(--wheel-offset, 0deg)), #dbeafe 0deg 11deg, #ffffff 11deg 12.857deg);
+  border: 0.55rem solid #e2e8f0;
+  box-shadow: inset 0 0 0 0.12rem #cbd5e1, 0 0.45rem 0.8rem rgba(2, 132, 199, 0.12);
+}
+
+body.role-patient .dispenser-center {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: 6.2rem;
+  height: 6.2rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: 0.2rem solid #e2e8f0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0369a1;
+  font-family: var(--font-family-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  gap: 0.05rem;
+  line-height: 1;
+  text-transform: uppercase;
+  z-index: 4;
+}
+
+body.role-patient .dispenser-center strong {
+  color: #0f172a;
+  font-size: 1.7rem;
+}
+
+body.role-patient .dispenser-slot {
+  width: 1.55rem;
+  height: 8.6rem;
+  position: absolute;
+  left: calc(50% - 0.775rem);
+  bottom: 50%;
+  overflow: hidden;
+  border: 1px solid #ffffff;
+  border-radius: 0.75rem 0.75rem 0.2rem 0.2rem;
+  background: rgba(255, 255, 255, 0.86);
+  clip-path: polygon(34% 100%, 66% 100%, 100% 0, 0 0);
+  transform: rotate(var(--slot-angle));
+  transform-origin: 50% 100%;
+  z-index: 1;
+}
+
+body.role-patient .dispenser-slot-header,
+body.role-patient .dispenser-lid-view,
+body.role-patient .dispenser-med-name,
+body.role-patient .dispenser-open-btn,
+body.role-patient .dispenser-state-badge,
+body.role-patient .dispenser-slot-empty-label {
+  display: none;
+}
+
+body.role-patient .dispenser-slot.state-filled {
+  background: #0f9f7a;
+  border-color: #0f9f7a;
+  box-shadow: 0 0 0 0.15rem rgba(15, 159, 122, 0.16);
+}
+
+body.role-patient .dispenser-slot.visual-filled {
+  background: #0f9f7a;
+  border-color: #0f9f7a;
+}
+
+body.role-patient .dispenser-slot.visual-empty {
+  background: #cbd5e1;
+  border-color: #b8c4d1;
+}
+
+body.role-patient .dispenser-slot.state-empty,
+body.role-patient .dispenser-slot.state-taken {
+  background: #cbd5e1 !important;
+  border-color: #b8c4d1 !important;
+}
+
+body.role-patient .dispenser-slot.state-filled {
+  background: #0f9f7a !important;
+  border-color: #0f9f7a !important;
+}
+
+body.role-patient .dispenser-slot.state-locked {
+  border-style: dashed;
+  background: rgba(226, 232, 240, 0.7);
+  opacity: 0.82;
+}
+
+body.role-patient .dispenser-slot.state-taken {
+  background: #dbe4ed;
+  border-color: #cbd5e1;
+}
+
+body.role-patient .dispenser-slot.state-alert {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 0.18rem rgba(239, 68, 68, 0.18);
+}
+
+body.role-patient .dispenser-slot.state-alert::after {
+  content: '';
+  position: absolute;
+  width: 0.55rem;
+  height: 0.55rem;
+  left: 50%;
+  bottom: 0.4rem;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0.5rem #ef4444;
+  transform: translateX(-50%);
+}
+
+body.role-patient .dispenser-slot-empty {
+  color: #94a3b8;
+  background: #dbe4ed;
+  border-color: #cbd5e1;
+}
+
+body.role-patient .dispenser-slot.current-slot {
+  background: #f97316 !important;
+  border-color: #ea580c !important;
+  box-shadow: none !important;
+  z-index: 3;
+}
+
+body.role-patient .dispenser-slot.state-locked.visual-filled:not(.current-slot) {
+  opacity: 1;
+  background: #0f9f7a;
+  border-color: #0f9f7a;
+}
+
+body.role-patient .dispenser-slot.state-filled.visual-filled,
+body.role-patient .dispenser-slot.state-locked.visual-filled {
+  opacity: 1;
+  background: #0f9f7a;
+  border-color: #0f9f7a;
+}
+
+body.role-patient .dispenser-slot.state-alert:not(.current-slot) {
+  box-shadow: none;
+}
+
+body.role-patient .dispenser-slot.state-alert.visual-filled:not(.current-slot) {
+  background: #0f9f7a;
+  border-color: #0f9f7a;
+}
+
+body.role-patient .dispenser-slot.state-alert.visual-empty:not(.current-slot) {
+  background: #cbd5e1;
+  border-color: #b8c4d1;
+}
+
+body.role-patient .dispenser-slot.state-alert::after {
+  display: none;
+}
+
+body.role-patient .dispenser-slot .dispenser-lid-view,
+body.role-patient .dispenser-slot .dispenser-pill-visual {
+  display: none !important;
+}
+
+body.role-patient .dispenser-slot .dispenser-led {
+  display: none;
+}
+
+body.role-patient .dispenser-slot-header {
+  display: none;
+}
+
+body.role-patient .dispenser-slot-number {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: inline-flex;
+  width: 1.8rem;
+  height: 1.8rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #075985;
+  font-size: 0.75rem;
+  font-weight: 800;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+body.role-patient .dispenser-slot-empty .dispenser-slot-number {
+  display: inline-flex;
+}
+
+body.role-patient .dispenser-slot.current-slot .dispenser-slot-number {
+  background: #f97316;
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+body.role-patient .dispenser-slot.state-filled .dispenser-slot-number {
+  color: #ffffff;
+}
+
+body.role-patient .dispenser-slot.state-taken .dispenser-slot-number {
+  color: #047857;
+}
+
+body.role-patient .dispenser-slot-number {
+  display: none !important;
+}
+
+body.role-patient .dispenser-slot-time {
+  color: #64748b;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+body.role-patient .dispenser-led {
+  width: 0.4rem;
+  height: 0.4rem;
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+body.role-patient .dispenser-led.active-green {
+  background: #10b981;
+  box-shadow: 0 0 0.45rem #10b981;
+}
+
+body.role-patient .dispenser-led.active-alert {
+  background: #ef4444;
+  box-shadow: 0 0 0.45rem #ef4444;
+  animation: ledPulse 0.7s infinite alternate;
+}
+
+body.role-patient .dispenser-lid-view {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+body.role-patient .dispenser-pill-visual {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+body.role-patient .dispenser-state-badge {
+  color: #15803d;
+  font-size: 0.57rem;
+  font-weight: 800;
+}
+
+body.role-patient .dispenser-med-name {
+  max-width: 100%;
+  overflow: hidden;
+  color: #334155;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.role-patient .dispenser-open-btn {
+  max-width: 100%;
+  padding: 0.2rem 0.35rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: #0284c7;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.57rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+body.role-patient .dispenser-open-btn:hover {
+  background: #0369a1;
+}
+
+body.role-patient .dispenser-open-btn.btn-locked-disabled,
+body.role-patient .dispenser-open-btn.btn-taken-disabled,
+body.role-patient .dispenser-open-btn.btn-empty-disabled {
+  background: #f1f5f9 !important;
+  border: 1px dashed #cbd5e1;
+  color: #94a3b8 !important;
+  cursor: default;
+}
+
+body.role-patient .dispenser-caption {
+  display: none;
+}
+
 body.role-patient #role-view-patient .compartment-card {
   background: #ffffff;
   border: 2px solid #e2e8f0;
@@ -2799,6 +3119,109 @@ body.role-patient .action-btn.btn-locked-disabled {
   color: #94a3b8 !important;
   border: 1.5px dashed #cbd5e1 !important;
   cursor: not-allowed !important;
+}
+
+/* Compact weekly wheel for the patient schedule */
+body.role-patient .weekly-wheel {
+  width: min(100%, 22rem);
+  aspect-ratio: 1;
+  margin: 1rem auto;
+  position: relative;
+  border: 0.8rem solid #dbeafe;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0 27%, #e0f2fe 28% 29%, #f8fafc 30% 64%, #dbeafe 65% 66%, #eff6ff 67% 100%);
+  box-shadow: inset 0 0 0 0.2rem #bfdbfe, 0 0.7rem 1.4rem rgba(2, 132, 199, 0.12);
+}
+
+body.role-patient .wheel-center {
+  width: 5.2rem;
+  height: 5.2rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 0.3rem solid #e2e8f0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0369a1;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+body.role-patient .wheel-center span {
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+body.role-patient .wheel-center strong {
+  font-family: var(--font-family-display);
+  font-size: 1.05rem;
+}
+
+body.role-patient .week-wheel-day {
+  width: 4.1rem;
+  min-height: 5.2rem;
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.18rem;
+  padding: 0.28rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0.25rem 0.65rem rgba(15, 23, 42, 0.08);
+  text-align: center;
+}
+
+body.role-patient .week-wheel-day strong {
+  grid-column: 1 / -1;
+  color: #0369a1;
+  font-size: 0.72rem;
+}
+
+body.role-patient .week-dose {
+  display: grid;
+  min-height: 1.05rem;
+  place-items: center;
+  border-radius: 0.25rem;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 0.48rem;
+  font-weight: 800;
+}
+
+body.role-patient .week-dose.completed {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+body.role-patient .week-dose.active {
+  background: #99f6e4;
+  color: #0f766e;
+  box-shadow: 0 0 0 0.12rem rgba(20, 184, 166, 0.25);
+}
+
+body.role-patient .week-dose.upcoming {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+body.role-patient .week-wheel-day:nth-of-type(2) { top: 0.5rem; left: 50%; transform: translateX(-50%); }
+body.role-patient .week-wheel-day:nth-of-type(3) { top: 3.6rem; right: 0.4rem; }
+body.role-patient .week-wheel-day:nth-of-type(4) { top: 50%; right: -0.25rem; transform: translateY(-50%); }
+body.role-patient .week-wheel-day:nth-of-type(5) { bottom: 3.6rem; right: 0.4rem; }
+body.role-patient .week-wheel-day:nth-of-type(6) { bottom: 0.5rem; left: 50%; transform: translateX(-50%); }
+body.role-patient .week-wheel-day:nth-of-type(7) { bottom: 3.6rem; left: 0.4rem; }
+body.role-patient .week-wheel-day:nth-of-type(8) { top: 50%; left: -0.25rem; transform: translateY(-50%); }
+
+body.role-patient .weekly-wheel + * {
+  display: none;
 }
 
 /* ===================================================================

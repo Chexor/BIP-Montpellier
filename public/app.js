@@ -22,6 +22,10 @@ const state = {
   webcamStream: null,
 };
 
+// Apache and Live Preview serve the UI separately from the Node API.
+const apiOrigin = ['3000', '3001'].includes(window.location.port) ? '' : 'http://localhost:3001';
+const apiUrl = (path) => `${apiOrigin}${path}`;
+
 // DOM Cache
 const dom = {
   // Header & Persona Controls
@@ -81,6 +85,7 @@ const dom = {
   patientWelcomeGreeting: document.querySelector('.pwc-greeting'),
   patientBatteryBadge: document.getElementById('patient-battery-badge'),
   patientCompartmentsList: document.getElementById('patient-compartments-list'),
+  patientCurrentSlot: document.getElementById('patient-current-slot'),
   patientNextDoseCard: document.getElementById('patient-next-dose-card'),
   spotlightStatusTag: document.getElementById('spotlight-status-tag'),
   spotlightTimeText: document.getElementById('spotlight-time-text'),
@@ -707,7 +712,7 @@ function renderPatientSchedule() {
 
 async function loadInitialData() {
   try {
-    const res = await fetch('/api/status');
+    const res = await fetch(apiUrl('/api/status'));
     if (!res.ok) throw new Error('Could not load status');
     const data = await res.json();
 
@@ -725,7 +730,7 @@ async function loadInitialData() {
 
 function initSSE() {
   try {
-    const eventSource = new EventSource('/api/events');
+    const eventSource = new EventSource(apiUrl('/api/events'));
 
     eventSource.onmessage = (e) => {
       try {
@@ -917,9 +922,38 @@ function renderCompartments() {
 
   // 1. Render Patient View (Calming, Time-Locked, No Refill buttons)
   if (dom.patientCompartmentsList) {
-    dom.patientCompartmentsList.innerHTML = '';
+    dom.patientCompartmentsList.querySelectorAll('.dispenser-slot').forEach((slot) => slot.remove());
 
-    comps.forEach((comp) => {
+    const currentCompartment = state.simulatedTime === '08:00'
+      ? comps.find((comp) => comp.compartment_index === 1)
+      : (comps.find((comp) => comp.compartment_index === 3) || comps[0]);
+    const currentCompartmentIndex = currentCompartment?.compartment_index;
+    const sliceAngle = 360 / 28;
+    const currentVisualIndex = currentCompartmentIndex ? 14 + currentCompartmentIndex - 1 : 14;
+    const wheelOffset = 180 - ((currentVisualIndex - 1) * sliceAngle);
+    dom.patientCompartmentsList.style.setProperty('--wheel-offset', `${wheelOffset}deg`);
+    if (dom.patientCurrentSlot && currentCompartment) {
+      dom.patientCurrentSlot.textContent = `#${currentCompartment.compartment_index}`;
+    }
+
+    const patientSlots = Array.from({ length: 28 }, (_, index) => {
+      const comp = comps.find((item) => 14 + item.compartment_index - 1 === index + 1);
+      return { comp, index: index + 1 };
+    });
+
+    patientSlots.forEach(({ comp, index }) => {
+      if (!comp) {
+        const emptySlot = document.createElement('div');
+        const emptyAngle = (index - 1) * sliceAngle + wheelOffset;
+        const isCurrentVisualSlot = index === currentVisualIndex;
+        const emptyVisualState = (index - 1) * sliceAngle >= 180 ? ' visual-filled' : ' visual-empty';
+        emptySlot.className = `dispenser-slot dispenser-slot-empty${emptyVisualState}${isCurrentVisualSlot ? ' current-slot' : ''}`;
+        emptySlot.style.setProperty('--slot-angle', `${emptyAngle}deg`);
+        emptySlot.innerHTML = `<span class="dispenser-slot-number">${index}</span><span class="dispenser-slot-empty-label">Empty</span>`;
+        dom.patientCompartmentsList.appendChild(emptySlot);
+        return;
+      }
+
       const med = state.medications.find((m) => m.id === comp.medication_id);
       const medName = med ? med.brand_name : (comp.medication_id || 'Empty');
 
@@ -944,35 +978,39 @@ function renderCompartments() {
       if (isLockedFuture) stateClass = 'state-locked';
       const alertClass = comp.led_active ? 'state-alert' : '';
 
-      card.className = `compartment-card ${stateClass} ${alertClass}`;
+      const currentClass = index === currentVisualIndex ? 'current-slot' : '';
+      const slotAngle = (index - 1) * sliceAngle + wheelOffset;
+      const visualState = (index - 1) * sliceAngle >= 180 ? 'visual-filled' : 'visual-empty';
+      card.className = `dispenser-slot ${stateClass} ${visualState} ${alertClass} ${currentClass}`;
+      card.style.setProperty('--slot-angle', `${slotAngle}deg`);
 
       // LED indicator
       const led = document.createElement('div');
       let ledTitle = 'LED Off';
       if (comp.led_active) {
-        led.className = 'compartment-led active-alert';
+        led.className = 'dispenser-led active-alert';
         ledTitle = 'LED Blinking Red (Overdue)';
       } else if (isUnlockedNow) {
-        led.className = 'compartment-led active-green';
+        led.className = 'dispenser-led active-green';
         ledTitle = 'LED Glowing Green (Ready to open)';
       } else {
-        led.className = 'compartment-led';
+        led.className = 'dispenser-led';
       }
       led.title = ledTitle;
       card.appendChild(led);
 
       // Header
       const header = document.createElement('div');
-      header.className = 'comp-header';
+      header.className = 'dispenser-slot-header';
       header.innerHTML = `
-        <span class="comp-index-tag">Box ${comp.compartment_index}</span>
-        <span class="comp-label">${comp.label}</span>
+        <span class="dispenser-slot-number">${comp.compartment_index}</span>
+        <span class="dispenser-slot-time">${comp.target_time}</span>
       `;
       card.appendChild(header);
 
       // Pill Graphic
       const lidView = document.createElement('div');
-      lidView.className = 'comp-lid-view';
+      lidView.className = 'dispenser-lid-view';
       let pillEmoji = '💊';
       let badgeText = 'Ready';
       let badgeClass = 'state-badge-filled';
@@ -992,38 +1030,38 @@ function renderCompartments() {
       }
 
       lidView.innerHTML = `
-        <div class="comp-pill-visual">${pillEmoji}</div>
-        <span class="comp-state-badge ${badgeClass}">${badgeText}</span>
+        <div class="dispenser-pill-visual">${pillEmoji}</div>
+        <span class="dispenser-state-badge ${badgeClass}">${badgeText}</span>
       `;
       card.appendChild(lidView);
 
       // Med title
       const medTitle = document.createElement('div');
-      medTitle.className = 'comp-med-name';
+      medTitle.className = 'dispenser-med-name';
       medTitle.textContent = medName;
       card.appendChild(medTitle);
 
       // Patient Action Button with Safety Time Locking
       const actionBtn = document.createElement('button');
       if (isLockedFuture) {
-        actionBtn.className = 'comp-open-btn btn-locked-disabled';
+        actionBtn.className = 'dispenser-open-btn btn-locked-disabled';
         actionBtn.textContent = `🔒 Locked until ${comp.target_time}`;
         actionBtn.onclick = () => {
           showToast(`🔒 Safety Lock: Compartment ${comp.compartment_index} opens automatically at ${comp.target_time}.`, 'info');
         };
       } else if (comp.state === 'FILLED') {
-        actionBtn.className = 'comp-open-btn';
+        actionBtn.className = 'dispenser-open-btn';
         actionBtn.textContent = comp.led_active ? '🚨 Take Overdue Dose (Open)' : 'Open Lid 🔓';
         actionBtn.onclick = async () => {
           await openCompartmentAction(comp.compartment_index);
           speakText(`Compartment ${comp.compartment_index} opened. Please take ${medName} with water.`);
         };
       } else if (comp.state === 'TAKEN') {
-        actionBtn.className = 'comp-open-btn btn-taken-disabled';
+        actionBtn.className = 'dispenser-open-btn btn-taken-disabled';
         actionBtn.textContent = 'Taken Today ✨';
         actionBtn.disabled = true;
       } else {
-        actionBtn.className = 'comp-open-btn btn-empty-disabled';
+        actionBtn.className = 'dispenser-open-btn btn-empty-disabled';
         actionBtn.textContent = 'Empty';
         actionBtn.disabled = true;
       }
@@ -1133,46 +1171,6 @@ function renderTimeline() {
     dom.caregiverAlertBanner.classList.add('hidden');
   }
 
-  if (logs.length === 0) {
-    dom.logsTimeline.innerHTML = '<div class="timeline-item"><span class="tl-med">No intake logs yet today.</span></div>';
-    return;
-  }
-
-  logs.forEach((log) => {
-    const item = document.createElement('div');
-    item.className = 'timeline-item';
-
-    let icon = '✔';
-    let statusClass = 'tl-status-success';
-    let statusLabel = 'Taken on time';
-
-    if (log.status === 'MISSED') {
-      icon = '✖';
-      statusClass = 'tl-status-missed';
-      statusLabel = 'Missed (>30m)';
-    } else if (log.status === 'PENDING') {
-      icon = '⏳';
-      statusClass = 'tl-status-pending';
-      statusLabel = 'Pending';
-    }
-
-    const timeString = log.actual_time
-      ? new Date(log.actual_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-      : (log.scheduled_time ? log.scheduled_time.slice(11, 16) || 'Scheduled' : 'Scheduled');
-
-    item.innerHTML = `
-      <div class="tl-left">
-        <div class="tl-icon-status ${statusClass}">${icon}</div>
-        <div class="tl-info">
-          <span class="tl-med">${log.medication_name} (Compartment ${log.compartment_index})</span>
-          <span class="tl-time-details">Time: ${timeString} • Caregiver notified: ${log.caregiver_notified ? 'Yes' : 'No'}</span>
-        </div>
-      </div>
-      <span class="tl-badge ${statusClass}">${statusLabel}</span>
-    `;
-
-    dom.logsTimeline.appendChild(item);
-  });
 }
 
 // Render Inbox Messages for both Patient and Caregiver
@@ -1277,12 +1275,16 @@ function displayMedicationExplanation(med) {
 
   if (assignedComp) {
     dom.guidanceText.innerHTML = `Caregiver assignment: <strong>Compartment ${assignedComp.compartment_index} (${assignedComp.label})</strong>.`;
-    dom.btnQuickFill.textContent = `Load into Compartment ${assignedComp.compartment_index}`;
-    dom.btnQuickFill.onclick = () => fillCompartmentAction(assignedComp.compartment_index, med.id);
+    if (dom.btnQuickFill) {
+      dom.btnQuickFill.textContent = `Load into Compartment ${assignedComp.compartment_index}`;
+      dom.btnQuickFill.onclick = () => fillCompartmentAction(assignedComp.compartment_index, med.id);
+    }
   } else {
     dom.guidanceText.innerHTML = `No fixed compartment assigned. Caregiver can pick an empty compartment.`;
-    dom.btnQuickFill.textContent = `Load into Compartment 2`;
-    dom.btnQuickFill.onclick = () => fillCompartmentAction(2, med.id);
+    if (dom.btnQuickFill) {
+      dom.btnQuickFill.textContent = `Load into Compartment 2`;
+      dom.btnQuickFill.onclick = () => fillCompartmentAction(2, med.id);
+    }
   }
 }
 
@@ -1344,7 +1346,7 @@ function toggleMedExplanationSpeech() {
 
 async function scanBarcode(barcode) {
   try {
-    const res = await fetch('/api/scan', {
+    const res = await fetch(apiUrl('/api/scan'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ barcode: barcode.trim() }),
@@ -1367,7 +1369,7 @@ async function scanBarcode(barcode) {
 
 async function openCompartmentAction(index) {
   try {
-    const res = await fetch('/api/open', {
+    const res = await fetch(apiUrl('/api/open'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ compartment_index: index }),
@@ -1385,7 +1387,7 @@ async function openCompartmentAction(index) {
 
 async function fillCompartmentAction(index, medId) {
   try {
-    const res = await fetch('/api/fill', {
+    const res = await fetch(apiUrl('/api/fill'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ compartment_index: index, medication_id: medId }),
@@ -1402,7 +1404,7 @@ async function fillCompartmentAction(index, medId) {
 
 async function triggerAlertAction(index = 3, showUserToast = true) {
   try {
-    const res = await fetch('/api/alert', {
+    const res = await fetch(apiUrl('/api/alert'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ compartment_index: index }),
@@ -1426,7 +1428,7 @@ async function sendCaregiverMessageToPatient() {
   }
 
   try {
-    const res = await fetch('/api/messages', {
+    const res = await fetch(apiUrl('/api/messages'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1451,7 +1453,7 @@ async function sendCaregiverMessageToPatient() {
 
 async function markAsRead(id) {
   try {
-    await fetch('/api/messages/read', {
+    await fetch(apiUrl('/api/messages/read'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
@@ -1466,7 +1468,7 @@ async function markAsRead(id) {
 
 async function resetDemoData() {
   try {
-    const res = await fetch('/api/reset', { method: 'POST' });
+    const res = await fetch(apiUrl('/api/reset'), { method: 'POST' });
     if (!res.ok) throw new Error('Reset failed');
     await loadInitialData();
     if (state.medications.length > 0) {
@@ -1588,11 +1590,11 @@ function setupEventListeners() {
   dom.btnResetData.addEventListener('click', resetDemoData);
 
   // Pitch Flow
-  dom.pitchStep1.addEventListener('click', () => runPitchStep(1));
-  dom.pitchStep2.addEventListener('click', () => runPitchStep(2));
-  dom.pitchStep3.addEventListener('click', () => runPitchStep(3));
-  dom.pitchStep4.addEventListener('click', () => runPitchStep(4));
-  dom.pitchStepAlert.addEventListener('click', () => runPitchStep('alert'));
+  if (dom.pitchStep1) dom.pitchStep1.addEventListener('click', () => runPitchStep(1));
+  if (dom.pitchStep2) dom.pitchStep2.addEventListener('click', () => runPitchStep(2));
+  if (dom.pitchStep3) dom.pitchStep3.addEventListener('click', () => runPitchStep(3));
+  if (dom.pitchStep4) dom.pitchStep4.addEventListener('click', () => runPitchStep(4));
+  if (dom.pitchStepAlert) dom.pitchStepAlert.addEventListener('click', () => runPitchStep('alert'));
 
   // Bottom Navigation Tabs
   document.querySelectorAll('.bottom-tab-btn').forEach((btn) => {
