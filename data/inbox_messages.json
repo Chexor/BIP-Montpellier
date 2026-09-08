@@ -1,0 +1,26 @@
+[
+  {
+    "id": "msg_001",
+    "from": "CAREGIVER",
+    "to": "PATIENT",
+    "sender_name": "Sophie (Daughter)",
+    "title": "Evening Reminder",
+    "content": "Hi Dad, don't forget to take your Lipitor with dinner tonight! I'll visit tomorrow afternoon with the groceries. Love, Sophie ❤️",
+    "type": "REMINDER",
+    "timestamp": "2026-09-08T11:30:00Z",
+    "read": false
+  },
+  {
+    "id": "msg_002",
+    "from": "SYSTEM_PILLBOX",
+    "to": "CAREGIVER",
+    "sender_name": "Dosette Smart Pillbox",
+    "title": "Morning Dose Taken on Time",
+    "content": "Jean took Dafalgan 1g (Compartment 1) on time at 08:07.",
+    "type": "CONFIRMATION",
+    "timestamp": "2026-09-08T08:07:22Z",
+    "read": true,
+    "medication_name": "Dafalgan 1g",
+    "compartment_index": 1
+  }
+]

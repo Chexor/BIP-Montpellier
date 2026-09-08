@@ -1,0 +1,32 @@
+{
+  "name": "dosette-pillbox",
+  "version": "1.0.0",
+  "description": "Dosette Smart Pillbox & AI Companion Hackathon Simulator",
+  "main": "src/cli/index.ts",
+  "type": "module",
+  "scripts": {
+    "cli": "tsx src/cli/index.ts",
+    "app": "tsx src/server/index.ts",
+    "server": "tsx src/server/index.ts",
+    "dev": "tsx src/server/index.ts",
+    "start": "tsx src/server/index.ts",
+    "build": "tsc"
+  },
+  "keywords": [
+    "dosette",
+    "smart-pillbox",
+    "ai-companion",
+    "e-health"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
