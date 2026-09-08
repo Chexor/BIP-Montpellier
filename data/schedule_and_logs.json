@@ -1,0 +1,24 @@
+{
+  "patient_name": "Jean Dupont",
+  "caregiver_contact": "+32470123456",
+  "intake_logs": [
+    {
+      "id": "log_101",
+      "scheduled_time": "2026-09-08T08:00:00Z",
+      "actual_time": "2026-09-08T08:07:22Z",
+      "compartment_index": 1,
+      "medication_name": "Dafalgan 1g",
+      "status": "TAKEN_ON_TIME",
+      "caregiver_notified": true
+    },
+    {
+      "id": "log_102",
+      "scheduled_time": "2026-09-08T19:00:00Z",
+      "actual_time": null,
+      "compartment_index": 3,
+      "medication_name": "Lipitor 20mg",
+      "status": "PENDING",
+      "caregiver_notified": false
+    }
+  ]
+}

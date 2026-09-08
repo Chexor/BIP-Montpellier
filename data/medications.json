@@ -1,0 +1,30 @@
+[
+  {
+    "id": "med_001",
+    "barcode": "3400930000001",
+    "brand_name": "Dafalgan 1g",
+    "generic_name": "Paracetamol",
+    "ai_explanation": {
+      "summary": "For pain relief and reducing fever.",
+      "simple_instructions": "Take 1 tablet with a large glass of water when in pain. Maximum 3 times per day.",
+      "warnings": "Do not drink alcohol. Wait at least 4 hours between doses."
+    },
+    "dosage": "1 tablet",
+    "color": "white",
+    "shape": "oval"
+  },
+  {
+    "id": "med_002",
+    "barcode": "3400930000002",
+    "brand_name": "Lipitor 20mg",
+    "generic_name": "Atorvastatin",
+    "ai_explanation": {
+      "summary": "Lowers cholesterol levels in your blood to protect your heart.",
+      "simple_instructions": "Take 1 tablet every evening with water, with or without food.",
+      "warnings": "Do not drink with grapefruit juice."
+    },
+    "dosage": "1 tablet",
+    "color": "white",
+    "shape": "round"
+  }
+]
