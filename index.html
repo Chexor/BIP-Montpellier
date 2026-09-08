@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Dosette — Smart Pillbox & AI Companion ecosystem for patients, seniors, and family caregivers.">
+  <title>Dosette — Smart Pillbox &amp; AI Companion</title>
+  
+  <!-- Healthcare Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="role-patient mode-mobile-phone">
+  <!-- Realtime Toast Notifications -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Global Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="logo-badge">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+            <path d="m8.5 8.5 7 7"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Dosette <span class="badge-pill">Smart Pillbox</span></h1>
+          <p class="brand-subtitle" id="header-persona-subtitle">Logged in as: <strong>Jean Dupont (Patient)</strong></p>
+        </div>
+      </div>
+
+      <!-- Controls: Role Selector, Lock Phone, Layout & Senior Mode -->
+      <div class="header-controls">
+        <!-- Persona Switcher -->
+        <div class="role-switcher-box">
+          <span class="switcher-label">Role:</span>
+          <div class="role-toggle-group">
+            <button id="btn-role-patient" class="role-btn active" title="View app as patient Jean (simplistic, calming daylight theme)">
+              👴 Jean (Patient)
+            </button>
+            <button id="btn-role-caregiver" class="role-btn" title="View app as caregiver Sophie (monitoring dashboard & refill controls)">
+              👩‍⚕️ Sophie (Caregiver)
+            </button>
+          </div>
+        </div>
+
+        <!-- Lockscreen Toggle Button -->
+        <button id="btn-toggle-lockscreen" class="layout-btn btn-lock-toggle" title="Lock smartphone to see push notifications on lockscreen">
+          🔒 <span id="lock-btn-label">Lock Phone</span>
+        </button>
+
+        <!-- Layout View Toggle (Mobile Phone vs Desktop Split) -->
+        <div class="layout-toggle-group desktop-only">
+          <button id="btn-toggle-layout" class="layout-btn" title="Toggle between Phone Mockup and Wide Split View">
+            📱 <span id="layout-label">Phone View</span>
+          </button>
+        </div>
+
+        <!-- Senior Accessibility Mode -->
+        <button id="btn-senior-mode" class="mode-toggle-btn" title="Toggle high contrast & extra-large font size">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <span>Senior Mode</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Interactive Time-Skip Simulator Bar -->
+    <div class="time-skip-bar">
+      <div class="time-skip-inner">
+        <div class="ts-label-group">
+          <span class="ts-clock-icon">⏰</span>
+          <span class="ts-title">TIME SIMULATOR:</span>
+          <span class="ts-current-time" id="simulated-time-display">19:00</span>
+        </div>
+        <div class="ts-buttons-row">
+          <button class="ts-btn" data-time="08:00" id="btn-ts-0800" title="Morning Dose Time (Dafalgan Due)">
+            ☀️ 08:00 (Morning)
+          </button>
+          <button class="ts-btn" data-time="12:30" id="btn-ts-1230" title="Lunch Time (Empty/No Meds)">
+            🌤️ 12:30 (Lunch)
+          </button>
+          <button class="ts-btn active-time" data-time="19:00" id="btn-ts-1900" title="Evening Dose Time (Lipitor Due)">
+            🌙 19:00 (Evening)
+          </button>
+          <button class="ts-btn" data-time="19:10" id="btn-ts-1910" title="10 min late -> Friendly reminder notification (no alarm)">
+            ⏰ 19:10 (+10m Reminder)
+          </button>
+          <button class="ts-btn ts-alert-btn" data-time="19:35" id="btn-ts-1935" title="Time Skip to 35m Late -> Trigger Missed Dose Alert!">
+            🚨 19:35 (Missed Dose)
+          </button>
+          <button class="ts-btn" id="btn-ts-plus30" title="Fast forward time by 30 minutes">
+            ⏩ +30 Min
+          </button>
+        </div>
+        <button id="btn-reset-data" class="reset-btn" title="Reset all demo data to initial state">
+          🔄 Reset Demo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Smartphone Viewport Container -->
+  <div class="app-viewport-wrapper" id="viewport-wrapper">
+    <div class="smartphone-frame" id="smartphone-frame">
+      
+      <!-- Top Speaker / Camera Notch -->
+      <div class="phone-notch">
+        <div class="notch-camera"></div>
+        <div class="notch-speaker"></div>
+      </div>
+
+      <!-- Phone Status Bar -->
+      <div class="phone-status-bar">
+        <span class="status-time" id="phone-clock">19:00</span>
+        <div class="status-icons">
+          <span class="status-icon">📶 5G</span>
+          <span class="status-icon">BT 🔵</span>
+          <span class="status-icon" id="phone-battery">88% 🔋</span>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           LOCKSCREEN OVERLAY (Realistic iOS / Android Push Notifications)
+           =================================================================== -->
+      <div id="phone-lockscreen" class="phone-lockscreen hidden">
+        <div class="lockscreen-header">
+          <div class="lockscreen-owner-badge" id="lockscreen-owner-badge">Jean's Phone 👴</div>
+          <div class="lockscreen-padlock">🔒</div>
+          <div class="lockscreen-clock" id="lockscreen-clock">19:00</div>
+          <div class="lockscreen-date" id="lockscreen-date">Tuesday, September 8</div>
+        </div>
+
+        <!-- Lockscreen Push Notifications Container -->
+        <div class="lockscreen-notifications-area">
+          <div class="ls-notif-heading">NOTIFICATIONS</div>
+          <div class="ls-notifications-list" id="lockscreen-notifications-list">
+            <!-- Dynamically populated push notification cards -->
+          </div>
+        </div>
+
+        <!-- Lockscreen Bottom Actions -->
+        <div class="lockscreen-footer">
+          <div class="ls-quick-actions">
+            <button class="ls-circle-btn" title="Flashlight">🔦</button>
+            <button class="ls-circle-btn" title="Camera">📷</button>
+          </div>
+          <button class="ls-unlock-btn" id="btn-unlock-phone">
+            <span class="unlock-chevron">⬆️</span>
+            <span>Tap to unlock phone</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Phone Content Body -->
+      <div class="phone-content-area" id="phone-content-area">
+
+        <!-- ===================================================================
+             VIEW 1: PATIENT PERSPECTIVE (👴 Jean Dupont)
+             Calming, Simplistic White & Light-Blue Palette
+             =================================================================== -->
+        <div id="role-view-patient" class="role-view">
+          
+          <!-- TAB: PATIENT TODAY -->
+          <section id="tab-patient-today" class="tab-page active">
+            <!-- Spotlight Card: Next Scheduled Dose -->
+            <div class="next-dose-spotlight" id="patient-next-dose-card">
+              <div class="spotlight-header">
+                <span class="spotlight-tag" id="spotlight-status-tag">SCHEDULED DOSE</span>
+                <span class="spotlight-time" id="spotlight-time-text">19:00 (Evening)</span>
+              </div>
+              <div class="spotlight-body">
+                <div class="spotlight-icon">💊</div>
+                <div>
+                  <h3 class="spotlight-med" id="spotlight-med-name">Lipitor 20mg</h3>
+                  <p class="spotlight-instruction" id="spotlight-instruction-text">Take 1 tablet with a glass of water with dinner.</p>
+                </div>
+              </div>
+              <div class="spotlight-compartment-hint" id="spotlight-hint-box">
+                👉 Ready in <strong>Compartment 3 (Evening)</strong> of your pillbox.
+              </div>
+              
+              <!-- Direct Action Button: Patient only takes pills when time arrives -->
+              <button class="action-btn btn-primary" id="btn-spotlight-open">
+                🔓 Take Lipitor 20mg (Open Compartment 3)
+              </button>
+            </div>
+
+            <!-- Physical Pillbox Status (Jean can only open the current dose) -->
+            <div class="card hardware-compact-card patient-dispenser-card">
+              <div class="chassis-header-compact">
+                <div>
+                  <span class="chc-title">Your Smart Pillbox</span>
+                </div>
+                <span class="chc-batt" id="patient-battery-badge">88% Battery 🔋</span>
+              </div>
+              <div class="patient-dispenser" id="patient-compartments-list" aria-label="Circular pillbox compartments">
+                <div class="dispenser-center" aria-hidden="true">
+                  <span>NOW</span>
+                  <strong id="patient-current-slot">#3</strong>
+                </div>
+                <!-- Dynamically rendered patient dispenser -->
+              </div>
+              <p class="chassis-hint">Refilled weekly by your caregiver Sophie.</p>
+            </div>
+
+            <!-- Big Quick Action Buttons -->
+            <div class="patient-quick-grid">
+              <button class="patient-big-action-btn" id="btn-patient-goto-scan">
+                <span class="btn-big-icon">📷</span>
+                <span class="btn-big-title">Scan Medicine</span>
+                <span class="btn-big-sub">Explain any package</span>
+              </button>
+              <button class="patient-big-action-btn" id="btn-patient-goto-inbox">
+                <span class="btn-big-icon">📬</span>
+                <span class="btn-big-title">My Messages</span>
+                <span class="btn-big-sub" id="patient-inbox-badge-label">1 new message</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- TAB: PATIENT SCHEDULE (Multi-Day Peace of Mind Calendar) -->
+          <section id="tab-patient-schedule" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">My Weekly Schedule 📅</h2>
+              <p class="page-sub-desc">Past days are checked off automatically so you never have to wonder if you took your pills.</p>
+            </div>
+
+            <!-- Peace of Mind Banner -->
+            <div class="peace-of-mind-card">
+              <div class="pom-icon">🌟</div>
+              <div class="pom-info">
+                <div class="pom-title">All Caught Up This Week!</div>
+                <div class="pom-desc">7 of 7 scheduled doses taken on time. Caregiver Sophie confirmed.</div>
+              </div>
+            </div>
+
+            <div class="weekly-wheel" id="patient-schedule-days" aria-label="Weekly medication schedule">
+              <div class="wheel-center">
+                <span>THIS WEEK</span>
+                <strong>4 doses</strong>
+                <span id="today-schedule-badge" hidden>Active Dose Ready</span>
+              </div>
+              <div class="week-wheel-day today-day active">
+                <strong>Tue</strong>
+                <span class="week-dose completed" id="sched-slot-morning">AM</span>
+                <span class="week-dose empty">NOON</span>
+                <span class="week-dose active" id="sched-slot-evening">PM</span>
+                <span class="week-dose upcoming">NIGHT</span>
+              </div>
+              <div class="week-wheel-day"><strong>Wed</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Thu</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Fri</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Sat</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Sun</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
+              <div class="week-wheel-day"><strong>Mon</strong><span class="week-dose completed">AM</span><span class="week-dose completed">NOON</span><span class="week-dose completed">PM</span><span class="week-dose completed">NIGHT</span></div>
+            </div>
+          </section>
+
+          <!-- TAB: PATIENT SCAN & AI -->
+          <section id="tab-patient-scan" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Medicine Scanner &amp; AI</h2>
+              <p class="page-sub-desc">Point your camera at any medicine package for clear, spoken plain-language advice.</p>
+            </div>
+
+            <!-- Calming Scanner Viewport -->
+            <div class="card scanner-card">
+              <div class="scanner-preview" id="scanner-viewport">
+                <div class="scanner-laser" id="scanner-laser"></div>
+                <div class="scanner-target-box">
+                  <div class="target-corner top-left"></div>
+                  <div class="target-corner top-right"></div>
+                  <div class="target-corner bottom-left"></div>
+                  <div class="target-corner bottom-right"></div>
+                  <div class="target-center-pill">
+                    <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                      <path d="m8.5 8.5 7 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="scanner-tip" id="scanner-tip-text">Point camera at medicine barcode</div>
+                <video id="webcam-video" autoplay playsinline class="webcam-video hidden"></video>
+              </div>
+
+              <!-- Quick Demo Presets -->
+              <div class="scan-controls">
+                <div class="quick-scans-label">Simulate instant scan:</div>
+                <div class="quick-scans-buttons">
+                  <button id="btn-scan-dafalgan" class="scan-preset-btn active" data-barcode="3400930000001">
+                    <span class="med-name">Dafalgan 1g</span>
+                    <span class="med-meta">Paracetamol (Pain &amp; Fever)</span>
+                  </button>
+                  <button id="btn-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002">
+                    <span class="med-name">Lipitor 20mg</span>
+                    <span class="med-meta">Atorvastatin (Cholesterol)</span>
+                  </button>
+                </div>
+
+                <div class="custom-barcode-row">
+                  <input type="text" id="input-barcode" placeholder="Barcode..." value="3400930000001">
+                  <button id="btn-custom-scan" class="action-btn btn-secondary">Scan</button>
+                  <button id="btn-toggle-camera" class="action-btn btn-outline" title="Toggle camera">📷 Camera</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plain English AI Begrip Card -->
+            <div id="ai-result-card" class="card ai-result-card">
+              <div class="ai-result-header">
+                <div class="med-badge-title">
+                  <span class="pill-color-dot" id="med-dot"></span>
+                  <div>
+                    <h3 id="med-brand-name" class="med-brand-name">Dafalgan 1g</h3>
+                    <span id="med-generic-name" class="med-generic-name">Paracetamol • 1 tablet (white, oval)</span>
+                  </div>
+                </div>
+                <button id="btn-speech" class="speech-btn" title="Read explanation aloud in clear English">
+                  <span id="speech-btn-label">Read Aloud 🔊</span>
+                </button>
+              </div>
+
+              <!-- Big Plain Language Highlight -->
+              <div class="plain-language-box">
+                <div class="pl-label">💡 WHAT DOES THIS MEDICINE DO?</div>
+                <p id="med-summary" class="pl-highlight">"This is Dafalgan for your headache and fever. Take 1 tablet with water."</p>
+              </div>
+
+              <div class="ai-details-grid">
+                <div class="ai-detail-block">
+                  <div class="block-label">How to take:</div>
+                  <p id="med-instructions">Take 1 tablet with a large glass of water when in pain. Maximum 3 times per day.</p>
+                </div>
+                <div class="ai-detail-block block-warning">
+                  <div class="block-label">Important warning:</div>
+                  <p id="med-warnings">Do not drink alcohol. Wait at least 4 hours between doses.</p>
+                </div>
+              </div>
+
+              <!-- Pillbox Compartment Hint -->
+              <div id="sync-guidance-box" class="sync-guidance-box">
+                <div class="guidance-content">
+                  <span class="guidance-title">Smart Pillbox Location:</span>
+                  <span id="guidance-text" class="guidance-desc">This medication belongs in <strong>Compartment 1 (Morning)</strong>.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB: PATIENT INBOX -->
+          <section id="tab-patient-inbox" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">My Messages</h2>
+              <p class="page-sub-desc">Messages and reminders from your daughter Sophie.</p>
+            </div>
+
+            <div class="inbox-container" id="patient-inbox-list">
+              <!-- Dynamically populated inbox cards -->
+            </div>
+          </section>
+
+          <!-- TAB: PATIENT HELP & EMERGENCY -->
+          <section id="tab-patient-help" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Help &amp; Contacts</h2>
+              <p class="page-sub-desc">Need assistance or feel unwell? Tap a button below to call immediately.</p>
+            </div>
+
+            <div class="help-cards-list">
+              <button class="emergency-contact-btn btn-call-sophie" id="btn-patient-call-sophie">
+                <span class="em-icon">📞</span>
+                <div class="em-text">
+                  <span class="em-name">Call Daughter Sophie</span>
+                  <span class="em-phone">+32 470 12 34 56 (Family Caregiver)</span>
+                </div>
+              </button>
+
+              <button class="emergency-contact-btn btn-call-doctor" id="btn-patient-call-doctor">
+                <span class="em-icon">👨‍⚕️</span>
+                <div class="em-text">
+                  <span class="em-name">Call Dr. Peeters</span>
+                  <span class="em-phone">+32 2 555 01 99 (General Practitioner)</span>
+                </div>
+              </button>
+
+              <button class="emergency-contact-btn btn-call-pharmacy" id="btn-patient-call-pharmacy">
+                <span class="em-icon">💊</span>
+                <div class="em-text">
+                  <span class="em-name">Ask Pharmacy De Zwaan</span>
+                  <span class="em-phone">+32 2 555 01 44 (Medication Advice)</span>
+                </div>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ===================================================================
+             VIEW 2: CAREGIVER PERSPECTIVE (👩‍⚕️ Sophie Dupont)
+             Telemetry, Adherence Monitoring & Pill Refill Management
+             =================================================================== -->
+        <div id="role-view-caregiver" class="role-view hidden">
+          
+          <!-- TAB: CAREGIVER OVERVIEW & TIMELINE -->
+          <section id="tab-cg-timeline" class="tab-page active">
+            <div class="cg-welcome-card">
+              <div class="cg-patient-badge">
+                <span class="cg-avatar">👴</span>
+                <div>
+                  <h2 class="cg-patient-title">Jean Dupont (82 yrs)</h2>
+                  <span class="cg-patient-meta">Living at Home • Heart &amp; Cholesterol Therapy</span>
+                </div>
+              </div>
+              <div class="adherence-stat-pill">
+                <span class="adherence-number">94%</span>
+                <span class="adherence-label">Adherence</span>
+              </div>
+            </div>
+
+            <!-- Emergency Missed Dose Alert Banner -->
+            <div id="caregiver-alert-banner" class="alert-banner hidden">
+              <div class="alert-icon-wrap">
+                <span class="alert-pulse-ring"></span>
+                🚨
+              </div>
+              <div class="alert-info">
+                <h3 class="alert-title">URGENT: Dose Missed (>30m Delay)!</h3>
+                <p id="alert-message" class="alert-text">Jean has not taken his 19:00 dose of Lipitor 20mg after more than 30 minutes delay.</p>
+              </div>
+              <div class="alert-actions">
+                <button id="btn-call-patient" class="btn-alert-call">📞 Call Jean</button>
+                <button id="btn-dismiss-alert" class="btn-alert-dismiss">Dismiss</button>
+              </div>
+            </div>
+
+            <!-- Realtime Intake Timeline -->
+            <div class="intake-timeline-card">
+              <div class="timeline-header">
+                <span class="timeline-title">Intake Activity Timeline (Today)</span>
+                <span class="timeline-badge-live">LIVE SYNC</span>
+              </div>
+              <div id="logs-timeline" class="logs-timeline"></div>
+            </div>
+          </section>
+
+          <!-- TAB: CAREGIVER PILLBOX REFILL & HARDWARE -->
+          <section id="tab-cg-pillbox" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Pillbox Refill &amp; Hardware Management</h2>
+              <p class="page-sub-desc">As the caregiver, you prepare and load the pills into Jean's smart compartments.</p>
+            </div>
+
+            <div class="pillbox-chassis">
+              <div class="pillbox-top-strip">
+                <div class="led-strip-label">Device: dosette_box_42</div>
+                <div class="connection-dots">
+                  <span class="conn-dot bt">BT LE</span>
+                  <span class="conn-dot wifi">Wi-Fi</span>
+                  <span class="conn-dot sync">Cloud Synced</span>
+                </div>
+              </div>
+
+              <!-- 3 Compartments with Refill buttons for Caregiver -->
+              <div class="compartments-container" id="caregiver-compartments-list">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <div class="pillbox-footer-bar">
+                <span id="cg-last-sync-time" class="sync-time">Last synced: Just now</span>
+                <span class="batt-badge">Battery: 88% 🔋</span>
+              </div>
+            </div>
+
+            <!-- Caregiver Simulator Controls -->
+            <div class="hardware-actions-row">
+              <button id="btn-cli-open-1" class="btn-hardware-action">
+                🔓 Simulate Patient Open (Comp 1)
+              </button>
+              <button id="btn-cli-open-3" class="btn-hardware-action">
+                🔓 Simulate Patient Open (Comp 3)
+              </button>
+              <button id="btn-cli-trigger-alert" class="btn-hardware-action btn-danger-action">
+                🚨 Trigger Missed Dose Alert (>30m)
+              </button>
+            </div>
+          </section>
+
+          <!-- TAB: CAREGIVER INBOX & SEND REMINDER -->
+          <section id="tab-cg-inbox" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Caregiver Messages &amp; Alerts</h2>
+              <p class="page-sub-desc">Send reminders directly to Jean's phone or view pillbox notifications.</p>
+            </div>
+
+            <!-- Send Reminder to Jean -->
+            <div class="card send-message-card">
+              <h3 class="send-title">💬 Send a Reminder to Jean</h3>
+              <p class="send-desc">This notification appears immediately on Jean's lockscreen and can be read aloud.</p>
+              
+              <!-- Quick Presets -->
+              <div class="quick-msg-presets">
+                <button class="preset-msg-btn" data-text="Hi Dad, don't forget to take your evening Lipitor with dinner! Love Sophie ❤️">
+                  "Don't forget your evening Lipitor! ❤️"
+                </button>
+                <button class="preset-msg-btn" data-text="I saw you took your morning pill on time, great job Dad! 👍">
+                  "Great job taking your morning pill! 👍"
+                </button>
+                <button class="preset-msg-btn" data-text="I will visit tomorrow around 2 PM with your groceries. See you tomorrow! 🚗">
+                  "I'll visit tomorrow afternoon! 🚗"
+                </button>
+              </div>
+
+              <div class="custom-msg-input-box">
+                <textarea id="input-cg-message" rows="2" placeholder="Write a personal note for Jean..."></textarea>
+                <button id="btn-send-message-to-patient" class="action-btn btn-primary">
+                  Send Reminder 🚀
+                </button>
+              </div>
+            </div>
+
+            <!-- Caregiver Notification Log -->
+            <div class="card">
+              <h3 class="send-title">Pillbox System Activity</h3>
+              <div class="inbox-container" id="caregiver-inbox-list">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB: CAREGIVER DOSSIER & SETTINGS -->
+          <section id="tab-cg-settings" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Patient Profile &amp; Protocol</h2>
+              <p class="page-sub-desc">Medical configuration and escalation settings for Jean Dupont.</p>
+            </div>
+
+            <div class="card dossier-card">
+              <div class="dossier-row">
+                <span class="dossier-label">Patient:</span>
+                <span class="dossier-value">Jean Dupont (82 yrs, Montpellier)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Primary Caregiver:</span>
+                <span class="dossier-value">Sophie Dupont (+32 470 12 34 56)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Assigned Pharmacy:</span>
+                <span class="dossier-value">De Zwaan Pharmacy (Montpellier)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Hardware Device:</span>
+                <span class="dossier-value">dosette_box_42 (Firmware v2.4)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Escalation Threshold:</span>
+                <span class="dossier-value">30 minutes delay (SMS &amp; Emergency Banner)</span>
+              </div>
+            </div>
+
+            <div class="caregiver-quick-actions">
+              <button id="btn-open-terminal-hint" class="cg-action-btn btn-terminal-hint">
+                💻 View CLI Terminal Commands
+              </button>
+            </div>
+          </section>
+        </div>
+
+      </div>
+
+      <!-- Native Mobile Bottom Navigation -->
+      <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <!-- Patient Navigation Tabs -->
+        <div class="nav-tabs-group nav-patient-tabs" id="nav-patient-tabs">
+          <button class="bottom-tab-btn active" data-tab="tab-patient-today">
+            <span class="tab-icon">💊</span>
+            <span class="tab-label">Today</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-patient-schedule">
+            <span class="tab-icon">📅</span>
+            <span class="tab-label">Schedule</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-patient-scan">
+            <span class="tab-icon">📷</span>
+            <span class="tab-label">Scan &amp; AI</span>
+          </button>
+          <button class="bottom-tab-btn tab-with-badge" data-tab="tab-patient-inbox">
+            <span class="tab-icon">📬</span>
+            <span class="tab-badge" id="patient-unread-badge">1</span>
+            <span class="tab-label">Inbox</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-patient-help">
+            <span class="tab-icon">🆘</span>
+            <span class="tab-label">Help</span>
+          </button>
+        </div>
+
+        <!-- Caregiver Navigation Tabs -->
+        <div class="nav-tabs-group nav-caregiver-tabs hidden" id="nav-caregiver-tabs">
+          <button class="bottom-tab-btn active" data-tab="tab-cg-timeline">
+            <span class="tab-icon">📊</span>
+            <span class="tab-label">Adherence</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-cg-pillbox">
+            <span class="tab-icon">📦</span>
+            <span class="tab-label">Pillbox</span>
+          </button>
+          <button class="bottom-tab-btn tab-with-badge" data-tab="tab-cg-inbox">
+            <span class="tab-icon">📬</span>
+            <span class="tab-badge" id="cg-unread-badge">0</span>
+            <span class="tab-label">Care Inbox</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-cg-settings">
+            <span class="tab-icon">⚙️</span>
+            <span class="tab-label">Profile</span>
+          </button>
+        </div>
+      </nav>
+
+    </div>
+  </div>
+
+  <!-- CLI Terminal Reference Modal -->
+  <div id="terminal-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>💻 Dosette Simulator CLI Commands</h3>
+        <button id="btn-close-modal" class="close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Run these commands in your terminal. All events synchronize <strong>live in real-time</strong> with both Jean's and Sophie's screens:</p>
+        <div class="code-box">
+          <div class="code-line"><code>npm run cli scan-pack 3400930000001</code> <span class="code-desc"># Scan Dafalgan 1g barcode</span></div>
+          <div class="code-line"><code>npm run cli open-compartment 1</code> <span class="code-desc"># Open compartment 1 (logs intake &amp; alerts caregiver)</span></div>
+          <div class="code-line"><code>npm run cli fill-compartment 2 med_001</code> <span class="code-desc"># Carer refills Compartment 2 with Dafalgan</span></div>
+          <div class="code-line"><code>npm run cli trigger-alert 3</code> <span class="code-desc"># Simulate >30m late missed dose alert</span></div>
+          <div class="code-line"><code>npm run cli status</code> <span class="code-desc"># Inspect hardware, battery and logs</span></div>
+          <div class="code-line"><code>npm run cli reset</code> <span class="code-desc"># Reset all data to initial demo state</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-modal-ok" class="action-btn btn-primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
