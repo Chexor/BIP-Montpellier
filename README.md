@@ -4,7 +4,6 @@
 
 ---
 
-<<<<<<< HEAD
 - `docs/brief.md` - problem statement, constraints, stakeholders, judging criteria
 - `docs/poc.md` - focused proof-of-concept scope, demo flow, architecture, and safety rules
 - `docs/workplan.md` - team roles, deliverables, development blocks, and demo checklist
@@ -15,9 +14,6 @@
 - `assets/` - images, mockups, icons, slides, and other media
 - `data/` - datasets, exports, samples, and cleaned inputs
 - `submission/` - final pitch, demo notes, links, and hand-in files
-=======
-## 🚀 Snelle Start
->>>>>>> 1-database-setup
 
 ### 1. Webserver & Companion App starten
 ```bash
