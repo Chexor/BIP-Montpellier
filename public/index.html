@@ -45,6 +45,9 @@
             <button id="btn-role-caregiver" class="role-btn" title="View app as caregiver Sophie (monitoring dashboard & refill controls)">
               👩‍⚕️ Sophie (Caregiver)
             </button>
+            <button id="btn-role-device" class="role-btn" title="View the physical circular pillbox device">
+              ⚙️ Pillbox Device
+            </button>
           </div>
         </div>
 
@@ -401,7 +404,7 @@
           </section>
         </div>
 
-        <!-- ===================================================================
+           <!-- ===================================================================
              VIEW 2: CAREGIVER PERSPECTIVE (👩‍⚕️ Sophie Dupont)
              Telemetry, Adherence Monitoring & Pill Refill Management
              =================================================================== -->
@@ -567,6 +570,31 @@
               <button id="btn-open-terminal-hint" class="cg-action-btn btn-terminal-hint">
                 💻 View CLI Terminal Commands
               </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ===================================================================
+             VIEW 3: PHYSICAL PILLBOX DEVICE
+             =================================================================== -->
+        <div id="role-view-device" class="role-view role-view-device hidden">
+          <section class="device-screen-view">
+            <div class="device-screen-heading">
+              <span class="device-screen-kicker">DOSETTE DEVICE</span>
+              <h2>Smart pillbox</h2>
+              <p id="device-screen-status">Compartment 3 is positioned at the opening.</p>
+            </div>
+            <div class="device-wheel" id="device-wheel" aria-label="Physical circular pillbox dispenser">
+              <div class="device-wheel-center">
+                <span id="device-wheel-time">NOW</span>
+                <strong id="device-wheel-current">#3</strong>
+              </div>
+            </div>
+            <div class="device-dose-screen hidden" id="device-dose-screen" aria-live="polite"></div>
+            <div class="device-screen-legend">
+              <span><i class="device-legend-swatch filled"></i>Medication loaded</span>
+              <span><i class="device-legend-swatch empty"></i>Empty</span>
+              <span><i class="device-legend-swatch active"></i>Opening</span>
             </div>
           </section>
         </div>

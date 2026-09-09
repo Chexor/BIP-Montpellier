@@ -2655,6 +2655,354 @@ body.role-patient .dispenser-slot-time {
   font-weight: 700;
 }
 
+/* ===================================================================
+   PHYSICAL PILLBOX DEVICE VIEW
+   =================================================================== */
+
+body.role-device .phone-content-area {
+  min-height: 78vh;
+  padding: 0;
+  background: #eef7fb;
+  overflow: visible;
+}
+
+body.role-device .app-viewport-wrapper {
+  align-items: stretch;
+  padding: 1.5rem 2rem 3rem;
+}
+
+body.role-device .smartphone-frame {
+  width: 100%;
+  max-width: 1100px;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  background: #eef7fb;
+  border: 0.15rem solid #d7e0ea;
+  border-radius: 2rem;
+  box-shadow: 0 1rem 3rem rgba(2, 132, 199, 0.14);
+}
+
+body.role-device .phone-notch,
+body.role-device .phone-status-bar,
+body.role-device .mobile-bottom-nav {
+  display: none;
+}
+
+body.role-device .role-view-device {
+  min-height: 100%;
+}
+
+body.role-device .device-screen-view {
+  min-height: 78vh;
+  padding: 2.5rem 1.25rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  color: #0f172a;
+  text-align: center;
+}
+
+body.role-device .device-screen-heading {
+  display: grid;
+  gap: 0.25rem;
+}
+
+body.role-device .device-screen-kicker {
+  color: #0f9f7a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+body.role-device .device-screen-heading h2 {
+  color: #075985;
+  font-family: var(--font-family-display);
+  font-size: 1.7rem;
+}
+
+body.role-device .device-screen-heading p {
+  color: #475569;
+  font-size: 0.88rem;
+}
+
+body.role-device .device-wheel {
+  width: min(75vw, 30rem);
+  aspect-ratio: 1;
+  position: relative;
+  border: 0.65rem solid #d7e0ea;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from calc(-90deg + var(--device-wheel-offset, 0deg)), #b7c8d9 0deg 11deg, #f3f7fa 11deg 12.857deg);
+  box-shadow: inset 0 0 0 0.2rem #b8c4d1, 0 0.8rem 1.6rem rgba(2, 132, 199, 0.16);
+}
+
+body.role-device .device-wheel.hidden,
+body.role-device .device-dose-screen.hidden,
+body.role-device .device-screen-legend.hidden {
+  display: none !important;
+}
+
+body.role-device .device-fade-in {
+  animation: devicePanelFade 0.35s ease both;
+}
+
+@keyframes devicePanelFade {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+body.role-device .device-dose-screen:not(.hidden) {
+  display: flex;
+}
+
+body.role-device .device-wheel-center {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 9rem;
+  height: 9rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.2rem;
+  transform: translate(-50%, -50%);
+  border: 0.3rem solid #d7e0ea;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #075985;
+  font-family: var(--font-family-display);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  z-index: 4;
+}
+
+body.role-device .device-wheel-center strong {
+  color: #0f172a;
+  font-size: 1.8rem;
+}
+
+body.role-device .device-wheel-slot {
+  width: 2rem;
+  height: 12.5rem;
+  position: absolute;
+  left: calc(50% - 1rem);
+  bottom: 50%;
+  border: 2px solid #ffffff;
+  border-radius: 0.8rem;
+  background: #aebfd0;
+  transform: rotate(var(--device-slot-angle));
+  transform-origin: 50% 100%;
+  z-index: 1;
+}
+
+body.role-device .device-wheel-slot.filled {
+  background: #009b78;
+  border-color: #008566;
+}
+
+body.role-device .device-wheel-slot.active {
+  background: #f97316;
+  border-color: #ea580c;
+  box-shadow: 0 0 0 0.3rem rgba(249, 115, 22, 0.25);
+  z-index: 3;
+}
+
+body.role-device .device-screen-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.85rem;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+body.role-device .device-dose-screen {
+  width: min(75vw, 30rem);
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 0.65rem solid #d7e0ea;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 0.2rem #b8c4d1, 0 0.8rem 1.6rem rgba(2, 132, 199, 0.16);
+}
+
+body.role-device .device-dose-top {
+  min-height: 50%;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-bottom: 0.2rem solid #d7e0ea;
+  background: #eff8fb;
+  color: #075985;
+}
+
+body.role-device .device-dose-top strong {
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+}
+
+body.role-device .device-dose-top span:last-child {
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+body.role-device .device-dose-label {
+  color: #0f9f7a;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+body.role-device .device-dose-bottom {
+  min-height: 50%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+}
+
+body.role-device .device-dose-info,
+body.role-device .device-call-hold {
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 1.1rem;
+  border: 0;
+  color: #075985;
+  cursor: pointer;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+body.role-device .device-dose-info,
+body.role-device .device-call-hold {
+  align-items: center;
+  justify-content: center;
+}
+
+body.role-device .device-dose-info {
+  background: #d88900;
+  border-right: 0.15rem solid #d7e0ea;
+  color: #ffffff;
+}
+
+body.role-device .device-call-hold {
+  background: #c62828;
+  color: #ffffff;
+}
+
+body.role-device .device-dose-info:hover,
+body.role-device .device-call-hold:hover {
+  filter: brightness(0.97);
+}
+
+body.role-device .device-dose-action-icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  font-family: var(--font-family-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+body.role-device .device-dose-info strong,
+body.role-device .device-call-hold strong {
+  max-width: 8.5rem;
+  font-size: 0.85rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+body.role-device .device-dose-info small,
+body.role-device .device-call-hold small {
+  max-width: 8.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+body.role-device .device-dose-info .device-dose-action-icon,
+body.role-device .device-call-hold .device-dose-action-icon {
+  flex: 0 0 auto;
+}
+
+body.role-device .device-hold-progress {
+  width: 100%;
+  height: 0;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+body.role-device .device-call-hold.holding .device-hold-progress {
+  height: 100%;
+  transition: height 3.5s linear;
+}
+
+body.role-device .device-dose-info .device-dose-action-icon,
+body.role-device .device-call-hold .device-dose-action-icon {
+  width: auto;
+  height: auto;
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border-radius: 0;
+  color: inherit;
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-0.1rem);
+}
+
+body.role-device .device-dose-info .device-dose-action-icon {
+  transform: translate(1.25rem, -0.8rem);
+}
+
+body.role-device .device-call-hold .device-dose-action-icon {
+  transform: translate(-1.25rem, -0.8rem);
+}
+
+body.role-device .device-screen-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+body.role-device .device-legend-swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+body.role-device .device-legend-swatch.filled { background: #0f9f7a; }
+body.role-device .device-legend-swatch.empty { background: #cbd5e1; }
+body.role-device .device-legend-swatch.active { background: #f97316; }
+
 body.role-patient .dispenser-led {
   width: 0.4rem;
   height: 0.4rem;
