@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dosette — Live Demonstration Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+  <main class="stage">
+
+    <!-- ============ PANEL B — scripted narration ============ -->
+    <section class="panel panel-b" aria-label="Demo narration">
+      <span class="tag tag-corner">B</span>
+      <span class="b-kicker" id="b-kicker">READY</span>
+      <h2 class="b-headline" id="b-headline">Dosette live demonstration</h2>
+      <p class="b-note" id="b-note">Use the walkthrough controls below. Each step drives the real patient, caregiver and device apps shown on the right.</p>
+      <div class="b-progress" id="b-progress"></div>
+    </section>
+
+    <!-- ============ PANEL A — physical unit (device app) ============ -->
+    <section class="panel panel-a" aria-label="Physical dispenser unit">
+      <span class="tag tag-corner">A</span>
+      <span class="device-pill pill-device">Dosi · physical unit</span>
+      <div class="frame-wrap frame-a">
+        <iframe id="fr-device" title="Dosette device display" src="index.html" loading="eager"></iframe>
+      </div>
+    </section>
+
+    <!-- ============ PANEL D — John's phone (patient app) ============ -->
+    <section class="panel panel-d" aria-label="John's phone">
+      <span class="tag tag-corner">D</span>
+      <span class="device-pill pill-patient">John's phone</span>
+      <div class="frame-wrap frame-tall">
+        <iframe id="fr-patient" title="Patient app — John" src="index.html" loading="eager"></iframe>
+      </div>
+    </section>
+
+    <!-- ============ PANEL E — Sophie's app (caregiver app) ============ -->
+    <section class="panel panel-e" aria-label="Sophie's app">
+      <span class="tag tag-corner">E</span>
+      <span class="device-pill pill-caregiver">Sophie's app</span>
+      <div class="frame-wrap frame-tall">
+        <iframe id="fr-caregiver" title="Caregiver app — Sophie" src="index.html" loading="eager"></iframe>
+      </div>
+    </section>
+
+    <!-- ============ PANEL C — walkthrough controls ============ -->
+    <section class="panel panel-c" aria-label="Presentation controls">
+      <div class="c-head">
+        <div>
+          <span class="tag">C</span>
+          <span class="c-kicker">Presentation controls</span>
+          <h2 class="c-title">Scripted walkthrough</h2>
+        </div>
+        <button class="btn-reset" id="btn-reset">Reset demo</button>
+      </div>
+
+      <div class="c-groups">
+        <div class="c-group">
+          <h4 class="c-group-title">Main flow</h4>
+          <div class="c-btn-grid" id="grp-flow">
+            <button class="c-btn" data-step="0">1 · Scan the box</button>
+            <button class="c-btn" data-step="1">2 · AI explains it</button>
+            <button class="c-btn" data-step="2">3 · Sophie loads Compartment 3</button>
+            <button class="c-btn" data-step="3">4 · Evening dose is due (19:00)</button>
+            <button class="c-btn" data-step="4">5 · John takes his dose</button>
+            <button class="c-btn" data-step="5">6 · Sophie sees it on schedule</button>
+          </div>
+        </div>
+
+        <div class="c-group">
+          <h4 class="c-group-title">Simulation time</h4>
+          <div class="c-btn-grid c-btn-grid--time" id="grp-time">
+            <button class="c-btn" data-time="08:00">08:00 · Morning</button>
+            <button class="c-btn" data-time="12:30">12:30 · Lunch</button>
+            <button class="c-btn" data-time="19:00">19:00 · Evening</button>
+            <button class="c-btn" data-time="19:10">19:10 · +10 min</button>
+            <button class="c-btn c-btn--warn" data-time="19:35">19:35 · Missed</button>
+          </div>
+        </div>
+
+        <div class="c-group">
+          <h4 class="c-group-title">Other states</h4>
+          <div class="c-btn-grid c-btn-grid--one" id="grp-fallback">
+            <button class="c-btn" data-state="idle">Idle · no dose due now (12:30)</button>
+            <button class="c-btn c-btn--warn" data-fallback="missed">Missed dose → alert Sophie</button>
+          </div>
+        </div>
+
+        <div class="c-group">
+          <h4 class="c-group-title">Jump to a view</h4>
+          <div class="c-btn-grid c-btn-grid--one" id="grp-jump">
+            <button class="c-btn" data-jump="patient">Focus John's phone</button>
+            <button class="c-btn" data-jump="caregiver">Focus Sophie's app</button>
+            <button class="c-btn" data-jump="device">Focus the unit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="demo.js"></script>
+</body>
+</html>

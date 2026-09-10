@@ -6,7 +6,7 @@
 
 // Application State
 const state = {
-  currentRole: 'PATIENT', // 'PATIENT' | 'CAREGIVER'
+  currentRole: 'PATIENT', // 'PATIENT' | 'CAREGIVER' | 'DEVICE'
   activeTab: 'tab-patient-today',
   layoutMode: 'mobile-phone', // 'mobile-phone' | 'desktop-split'
   seniorMode: false,
@@ -20,6 +20,8 @@ const state = {
   currentScan: null,
   isSpeaking: false,
   webcamStream: null,
+  deviceDosePreview: false,
+  deviceDosePreviewTimer: null,
 };
 
 // Apache and Live Preview serve the UI separately from the Node API.
@@ -32,6 +34,7 @@ const dom = {
   headerSubtitle: document.getElementById('header-persona-subtitle'),
   btnRolePatient: document.getElementById('btn-role-patient'),
   btnRoleCaregiver: document.getElementById('btn-role-caregiver'),
+  btnRoleDevice: document.getElementById('btn-role-device'),
   btnToggleLockscreen: document.getElementById('btn-toggle-lockscreen'),
   lockBtnLabel: document.getElementById('lock-btn-label'),
   btnToggleLayout: document.getElementById('btn-toggle-layout'),
@@ -73,8 +76,14 @@ const dom = {
   // Views & Navigation
   roleViewPatient: document.getElementById('role-view-patient'),
   roleViewCaregiver: document.getElementById('role-view-caregiver'),
+  roleViewDevice: document.getElementById('role-view-device'),
   navPatientTabs: document.getElementById('nav-patient-tabs'),
   navCaregiverTabs: document.getElementById('nav-caregiver-tabs'),
+  deviceWheel: document.getElementById('device-wheel'),
+  deviceWheelTime: document.getElementById('device-wheel-time'),
+  deviceWheelCurrent: document.getElementById('device-wheel-current'),
+  deviceScreenStatus: document.getElementById('device-screen-status'),
+  deviceDoseScreen: document.getElementById('device-dose-screen'),
 
   // Badges
   patientUnreadBadge: document.getElementById('patient-unread-badge'),
@@ -150,6 +159,22 @@ const dom = {
   inputCgMessage: document.getElementById('input-cg-message'),
   btnSendMessageToPatient: document.getElementById('btn-send-message-to-patient'),
   caregiverInboxList: document.getElementById('caregiver-inbox-list'),
+
+  // Caregiver Scanner & AI Explanation
+  btnCgScanDafalgan: document.getElementById('btn-cg-scan-dafalgan'),
+  btnCgScanLipitor: document.getElementById('btn-cg-scan-lipitor'),
+  inputCgBarcode: document.getElementById('input-cg-barcode'),
+  btnCgCustomScan: document.getElementById('btn-cg-custom-scan'),
+  cgScanResult: document.getElementById('cg-scan-result'),
+  cgScanDot: document.getElementById('cg-scan-dot'),
+  cgScanName: document.getElementById('cg-scan-name'),
+  cgScanGeneric: document.getElementById('cg-scan-generic'),
+  cgScanSummary: document.getElementById('cg-scan-summary'),
+  cgScanInstructions: document.getElementById('cg-scan-instructions'),
+  cgScanWarnings: document.getElementById('cg-scan-warnings'),
+  cgScanAssign: document.getElementById('cg-scan-assign'),
+  btnCgScanLoad: document.getElementById('btn-cg-scan-load'),
+  btnCgScanSpeak: document.getElementById('btn-cg-scan-speak'),
 
   // Terminal modal & toast container
   btnOpenTerminalHint: document.getElementById('btn-open-terminal-hint'),
@@ -819,30 +844,44 @@ function switchRole(newRole) {
   // Toggle role classes on body for distinct calming light theme for Patient vs dark telemetry for Caregiver
   document.body.classList.toggle('role-patient', newRole === 'PATIENT');
   document.body.classList.toggle('role-caregiver', newRole === 'CAREGIVER');
+  document.body.classList.toggle('role-device', newRole === 'DEVICE');
 
   // Toggle active class on role buttons
   dom.btnRolePatient.classList.toggle('active', newRole === 'PATIENT');
   dom.btnRoleCaregiver.classList.toggle('active', newRole === 'CAREGIVER');
+  dom.btnRoleDevice.classList.toggle('active', newRole === 'DEVICE');
 
   // Update header subtitle
   if (newRole === 'PATIENT') {
     dom.headerSubtitle.innerHTML = 'Logged in as: <strong>Jean Dupont (Patient)</strong>';
     dom.roleViewPatient.classList.remove('hidden');
     dom.roleViewCaregiver.classList.add('hidden');
+    dom.roleViewDevice.classList.add('hidden');
     dom.navPatientTabs.classList.remove('hidden');
     dom.navCaregiverTabs.classList.add('hidden');
     activateTab('tab-patient-today');
-  } else {
+  } else if (newRole === 'CAREGIVER') {
     dom.headerSubtitle.innerHTML = 'Logged in as: <strong>Sophie Dupont (Caregiver)</strong>';
     dom.roleViewPatient.classList.add('hidden');
     dom.roleViewCaregiver.classList.remove('hidden');
+    dom.roleViewDevice.classList.add('hidden');
     dom.navPatientTabs.classList.add('hidden');
     dom.navCaregiverTabs.classList.remove('hidden');
     activateTab('tab-cg-timeline');
+  } else {
+    dom.headerSubtitle.innerHTML = 'Viewing: <strong>Dosette Pillbox Device</strong>';
+    dom.roleViewPatient.classList.add('hidden');
+    dom.roleViewCaregiver.classList.add('hidden');
+    dom.roleViewDevice.classList.remove('hidden');
+    dom.navPatientTabs.classList.add('hidden');
+    dom.navCaregiverTabs.classList.add('hidden');
   }
 
   renderAll();
-  showToast(newRole === 'PATIENT' ? 'Logged in as 👴 Jean Dupont (Patient)' : 'Logged in as 👩‍⚕️ Sophie Dupont (Caregiver)', 'info');
+  const roleLabel = newRole === 'PATIENT'
+    ? '👴 Jean Dupont (Patient)'
+    : newRole === 'CAREGIVER' ? '👩‍⚕️ Sophie Dupont (Caregiver)' : '⚙️ Dosette Pillbox Device';
+  showToast(`Viewing ${roleLabel}`, 'info');
 }
 
 function activateTab(tabId) {
@@ -891,11 +930,144 @@ function toggleLayoutMode() {
 function renderAll() {
   renderHardwareStatus();
   renderCompartments();
+  renderDeviceWheel();
   renderTimeline();
   renderInboxMessages();
   renderPatientSchedule();
   renderSpotlightCard();
   renderLockscreenNotifications();
+}
+
+function renderDeviceWheel() {
+  if (!dom.deviceWheel || !state.pillbox?.compartments || !dom.deviceDoseScreen) return;
+
+  const compartments = state.pillbox.compartments;
+  const currentCompartment = state.simulatedTime === '08:00'
+    ? compartments.find((comp) => comp.compartment_index === 1)
+    : compartments.find((comp) => comp.compartment_index === 3) || compartments[0];
+  const currentIndex = currentCompartment?.compartment_index || 1;
+  const hasDose = ['08:00', '19:00', '19:10', '19:35'].includes(state.simulatedTime) || state.deviceDosePreview;
+  const sliceAngle = 360 / 28;
+  const activePosition = 14 + currentIndex - 1;
+  const wheelOffset = 180 - ((activePosition - 1) * sliceAngle);
+
+  dom.deviceWheel.classList.toggle('hidden', hasDose);
+  dom.deviceDoseScreen.classList.toggle('hidden', !hasDose);
+  const deviceLegend = dom.roleViewDevice.querySelector('.device-screen-legend');
+  if (deviceLegend) deviceLegend.classList.toggle('hidden', hasDose);
+  dom.deviceWheel.style.display = hasDose ? 'none' : '';
+  dom.deviceDoseScreen.style.display = hasDose ? 'flex' : 'none';
+  if (deviceLegend) deviceLegend.style.display = hasDose ? 'none' : '';
+  const visibleDevicePanel = hasDose ? dom.deviceDoseScreen : dom.deviceWheel;
+  visibleDevicePanel.classList.remove('device-fade-in');
+  void visibleDevicePanel.offsetWidth;
+  visibleDevicePanel.classList.add('device-fade-in');
+  if (hasDose) {
+    const medication = state.medications.find((med) => med.id === currentCompartment?.medication_id);
+    const medicationName = medication?.brand_name || 'Scheduled medication';
+    const medicationDetails = medication
+      ? `${medication.dosage} • ${medication.generic_name}`
+      : 'Check your medication schedule.';
+    dom.deviceDoseScreen.innerHTML = `
+      <div class="device-dose-top">
+        <span class="device-dose-label">DOSE READY</span>
+        <strong>Compartment ${currentIndex}</strong>
+        <span>${state.simulatedTime} • ${medicationName}</span>
+      </div>
+      <div class="device-dose-bottom">
+        <button class="device-dose-info" type="button" aria-label="Medication information" title="Medication information">
+          <span class="device-dose-action-icon">i</span>
+        </button>
+        <button class="device-call-hold" type="button" aria-label="Hold for 3.5 seconds to call caregiver" title="Hold to call caregiver">
+          <span class="device-dose-action-icon">☎</span>
+          <span class="device-hold-progress"></span>
+        </button>
+      </div>
+    `;
+    const infoButton = dom.deviceDoseScreen.querySelector('.device-dose-info');
+    const callButton = dom.deviceDoseScreen.querySelector('.device-call-hold');
+    infoButton.addEventListener('click', () => showDeviceMedInfo(medication, medicationName));
+    let holdTimer;
+    const clearHold = () => {
+      window.clearTimeout(holdTimer);
+      callButton.classList.remove('holding');
+    };
+    callButton.addEventListener('pointerdown', () => {
+      callButton.classList.add('holding');
+      holdTimer = window.setTimeout(() => {
+        callButton.classList.remove('holding');
+        speakText('Calling your caregiver Sophie.');
+        showToast('Calling caregiver Sophie Dupont.', 'success');
+        alert('Calling caregiver Sophie Dupont (+32 470 12 34 56)...');
+      }, 3500);
+    });
+    callButton.addEventListener('pointerup', clearHold);
+    callButton.addEventListener('pointerleave', clearHold);
+    callButton.addEventListener('pointercancel', clearHold);
+  }
+
+  dom.deviceWheel.innerHTML = `
+    <div class="device-wheel-center">
+      <span>${state.simulatedTime}</span>
+      <strong>#${currentIndex}</strong>
+    </div>
+  `;
+  dom.deviceWheel.style.setProperty('--device-wheel-offset', `${wheelOffset}deg`);
+  if (dom.deviceWheelTime) dom.deviceWheelTime.textContent = state.simulatedTime;
+  if (dom.deviceWheelCurrent) dom.deviceWheelCurrent.textContent = `#${currentIndex}`;
+  if (dom.deviceScreenStatus) dom.deviceScreenStatus.textContent = `Compartment ${currentIndex} is positioned at the opening.`;
+
+  for (let index = 1; index <= 28; index += 1) {
+    const configuredCompartment = compartments.find((comp) => 14 + comp.compartment_index - 1 === index);
+    const slot = document.createElement('div');
+    const isCurrent = index === activePosition;
+    const isFilled = configuredCompartment?.state === 'FILLED';
+    slot.className = `device-wheel-slot ${isFilled ? 'filled' : 'empty'}${isCurrent ? ' active' : ''}`;
+    slot.style.setProperty('--device-slot-angle', `${(index - 1) * sliceAngle + wheelOffset}deg`);
+    slot.title = isCurrent ? `Opening: compartment ${currentIndex}` : (isFilled ? 'Medication loaded' : 'Empty');
+    dom.deviceWheel.appendChild(slot);
+  }
+
+  dom.deviceWheel.onclick = () => {
+    if (hasDose) return;
+    state.deviceDosePreview = true;
+    window.clearTimeout(state.deviceDosePreviewTimer);
+    renderDeviceWheel();
+    state.deviceDosePreviewTimer = window.setTimeout(() => {
+      state.deviceDosePreview = false;
+      renderDeviceWheel();
+    }, 10000);
+  };
+}
+
+// Orange "i" button on the dispenser display: speak a plain-language explanation
+// and show it in large, high-contrast text for elderly patients.
+function showDeviceMedInfo(medication, medicationName) {
+  if (!dom.deviceDoseScreen) return;
+
+  const summary = medication?.ai_explanation?.summary || 'This is your scheduled medication.';
+  const howTo = medication?.ai_explanation?.simple_instructions || 'Take it the way your caregiver has set up your schedule.';
+  const spoken = `This is ${medicationName}. ${summary} How to take it: ${howTo}`;
+
+  speakText(spoken);
+
+  dom.deviceDoseScreen.innerHTML = `
+    <div class="device-info-panel">
+      <span class="device-info-kicker">WHAT IS THIS MEDICINE?</span>
+      <strong class="device-info-name">${medicationName}</strong>
+      <p class="device-info-summary">${summary}</p>
+      <p class="device-info-howto"><b>How to take it:</b> ${howTo}</p>
+      <div class="device-info-actions">
+        <button class="device-info-btn device-info-again" type="button">🔊 Read again</button>
+        <button class="device-info-btn device-info-back" type="button">← Back</button>
+      </div>
+    </div>
+  `;
+
+  dom.deviceDoseScreen.querySelector('.device-info-again')
+    .addEventListener('click', () => speakText(spoken));
+  dom.deviceDoseScreen.querySelector('.device-info-back')
+    .addEventListener('click', () => renderDeviceWheel());
 }
 
 function renderHardwareStatus() {
@@ -1298,6 +1470,61 @@ function displayMedicationExplanation(med) {
   }
 }
 
+// Caregiver-side scanner: look up a barcode and show the plain-language card
+// used to confirm a medicine before loading it into a compartment.
+async function scanForCaregiver(barcode) {
+  if (!barcode) return;
+  try {
+    const res = await fetch(apiUrl('/api/scan'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ barcode: String(barcode).trim() }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'Barcode not recognized', 'alert');
+      return;
+    }
+    const data = await res.json();
+    displayCaregiverScan(data.medication, data.assigned_compartment);
+    showToast(`✅ ${data.medication.brand_name} recognized`, 'success');
+  } catch (err) {
+    console.error('Caregiver scan error:', err);
+    showToast('Error during medication scan', 'alert');
+  }
+}
+
+function displayCaregiverScan(med, assignedComp) {
+  if (!med || !dom.cgScanResult) return;
+  state.currentCgScan = med;
+
+  dom.cgScanName.textContent = med.brand_name;
+  dom.cgScanGeneric.textContent = `${med.generic_name} • ${med.dosage} (${med.color}, ${med.shape})`;
+  if (dom.cgScanDot) {
+    dom.cgScanDot.style.background = med.color === 'white' ? '#ffffff' : (med.color === 'yellow' ? '#fde047' : '#f43f5e');
+  }
+  dom.cgScanSummary.textContent = `"${med.ai_explanation.summary}"`;
+  dom.cgScanInstructions.textContent = med.ai_explanation.simple_instructions;
+  dom.cgScanWarnings.textContent = med.ai_explanation.warnings;
+
+  const comp = assignedComp
+    || (state.pillbox && state.pillbox.compartments
+      ? state.pillbox.compartments.find((c) => c.medication_id === med.id)
+      : null);
+  const targetIndex = comp ? comp.compartment_index : 2;
+
+  dom.cgScanAssign.innerHTML = comp
+    ? `Belongs in <strong>Compartment ${comp.compartment_index} (${comp.label})</strong>.`
+    : `No fixed compartment assigned — load into an empty one.`;
+
+  if (dom.btnCgScanLoad) {
+    dom.btnCgScanLoad.textContent = `Load into Compartment ${targetIndex}`;
+    dom.btnCgScanLoad.onclick = () => fillCompartmentAction(targetIndex, med.id);
+  }
+
+  dom.cgScanResult.classList.remove('hidden');
+}
+
 // ===================================================================
 // TEXT-TO-SPEECH (SPEECH SYNTHESIS - ENGLISH)
 // ===================================================================
@@ -1574,6 +1801,7 @@ function setupEventListeners() {
   // Role Switchers
   dom.btnRolePatient.addEventListener('click', () => switchRole('PATIENT'));
   dom.btnRoleCaregiver.addEventListener('click', () => switchRole('CAREGIVER'));
+  dom.btnRoleDevice.addEventListener('click', () => switchRole('DEVICE'));
 
   // Lockscreen Toggle
   dom.btnToggleLockscreen.addEventListener('click', toggleLockscreen);
@@ -1676,6 +1904,23 @@ function setupEventListeners() {
   dom.btnCliOpen1.addEventListener('click', () => openCompartmentAction(1));
   dom.btnCliOpen3.addEventListener('click', () => openCompartmentAction(3));
   dom.btnCliTriggerAlert.addEventListener('click', () => triggerAlertAction(3));
+
+  // Caregiver Scanner
+  if (dom.btnCgScanDafalgan) dom.btnCgScanDafalgan.addEventListener('click', () => scanForCaregiver('3400930000001'));
+  if (dom.btnCgScanLipitor) dom.btnCgScanLipitor.addEventListener('click', () => scanForCaregiver('3400930000002'));
+  if (dom.btnCgCustomScan) dom.btnCgCustomScan.addEventListener('click', () => scanForCaregiver(dom.inputCgBarcode ? dom.inputCgBarcode.value : ''));
+  if (dom.inputCgBarcode) {
+    dom.inputCgBarcode.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') scanForCaregiver(dom.inputCgBarcode.value);
+    });
+  }
+  if (dom.btnCgScanSpeak) {
+    dom.btnCgScanSpeak.addEventListener('click', () => {
+      const med = state.currentCgScan;
+      if (!med) return;
+      speakText(`This is ${med.brand_name}. ${med.ai_explanation.summary} How to take it: ${med.ai_explanation.simple_instructions} Important warning: ${med.ai_explanation.warnings}`);
+    });
+  }
 
   // Caregiver Alert Banner Actions
   dom.btnCallPatient.addEventListener('click', () => {
