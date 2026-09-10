@@ -212,10 +212,10 @@
 
             <!-- Big Quick Action Buttons -->
             <div class="patient-quick-grid">
-              <button class="patient-big-action-btn" id="btn-patient-goto-scan">
-                <span class="btn-big-icon">📷</span>
-                <span class="btn-big-title">Scan Medicine</span>
-                <span class="btn-big-sub">Explain any package</span>
+              <button class="patient-big-action-btn" id="btn-patient-goto-schedule">
+                <span class="btn-big-icon">📅</span>
+                <span class="btn-big-title">My Schedule</span>
+                <span class="btn-big-sub">Weekly dose calendar</span>
               </button>
               <button class="patient-big-action-btn" id="btn-patient-goto-inbox">
                 <span class="btn-big-icon">📬</span>
@@ -260,97 +260,6 @@
               <div class="week-wheel-day"><strong>Sat</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
               <div class="week-wheel-day"><strong>Sun</strong><span class="week-dose upcoming">AM</span><span class="week-dose upcoming">NOON</span><span class="week-dose upcoming">PM</span><span class="week-dose upcoming">NIGHT</span></div>
               <div class="week-wheel-day"><strong>Mon</strong><span class="week-dose completed">AM</span><span class="week-dose completed">NOON</span><span class="week-dose completed">PM</span><span class="week-dose completed">NIGHT</span></div>
-            </div>
-          </section>
-
-          <!-- TAB: PATIENT SCAN & AI -->
-          <section id="tab-patient-scan" class="tab-page">
-            <div class="page-title-box">
-              <h2 class="page-main-heading">Medicine Scanner &amp; AI</h2>
-              <p class="page-sub-desc">Point your camera at any medicine package for clear, spoken plain-language advice.</p>
-            </div>
-
-            <!-- Calming Scanner Viewport -->
-            <div class="card scanner-card">
-              <div class="scanner-preview" id="scanner-viewport">
-                <div class="scanner-laser" id="scanner-laser"></div>
-                <div class="scanner-target-box">
-                  <div class="target-corner top-left"></div>
-                  <div class="target-corner top-right"></div>
-                  <div class="target-corner bottom-left"></div>
-                  <div class="target-corner bottom-right"></div>
-                  <div class="target-center-pill">
-                    <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6">
-                      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
-                      <path d="m8.5 8.5 7 7"></path>
-                    </svg>
-                  </div>
-                </div>
-                <div class="scanner-tip" id="scanner-tip-text">Point camera at medicine barcode</div>
-                <video id="webcam-video" autoplay playsinline class="webcam-video hidden"></video>
-              </div>
-
-              <!-- Quick Demo Presets -->
-              <div class="scan-controls">
-                <div class="quick-scans-label">Simulate instant scan:</div>
-                <div class="quick-scans-buttons">
-                  <button id="btn-scan-dafalgan" class="scan-preset-btn active" data-barcode="3400930000001">
-                    <span class="med-name">Dafalgan 1g</span>
-                    <span class="med-meta">Paracetamol (Pain &amp; Fever)</span>
-                  </button>
-                  <button id="btn-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002">
-                    <span class="med-name">Lipitor 20mg</span>
-                    <span class="med-meta">Atorvastatin (Cholesterol)</span>
-                  </button>
-                </div>
-
-                <div class="custom-barcode-row">
-                  <input type="text" id="input-barcode" placeholder="Barcode..." value="3400930000001">
-                  <button id="btn-custom-scan" class="action-btn btn-secondary">Scan</button>
-                  <button id="btn-toggle-camera" class="action-btn btn-outline" title="Toggle camera">📷 Camera</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Plain English AI Begrip Card -->
-            <div id="ai-result-card" class="card ai-result-card">
-              <div class="ai-result-header">
-                <div class="med-badge-title">
-                  <span class="pill-color-dot" id="med-dot"></span>
-                  <div>
-                    <h3 id="med-brand-name" class="med-brand-name">Dafalgan 1g</h3>
-                    <span id="med-generic-name" class="med-generic-name">Paracetamol • 1 tablet (white, oval)</span>
-                  </div>
-                </div>
-                <button id="btn-speech" class="speech-btn" title="Read explanation aloud in clear English">
-                  <span id="speech-btn-label">Read Aloud 🔊</span>
-                </button>
-              </div>
-
-              <!-- Big Plain Language Highlight -->
-              <div class="plain-language-box">
-                <div class="pl-label">💡 WHAT DOES THIS MEDICINE DO?</div>
-                <p id="med-summary" class="pl-highlight">"This is Dafalgan for your headache and fever. Take 1 tablet with water."</p>
-              </div>
-
-              <div class="ai-details-grid">
-                <div class="ai-detail-block">
-                  <div class="block-label">How to take:</div>
-                  <p id="med-instructions">Take 1 tablet with a large glass of water when in pain. Maximum 3 times per day.</p>
-                </div>
-                <div class="ai-detail-block block-warning">
-                  <div class="block-label">Important warning:</div>
-                  <p id="med-warnings">Do not drink alcohol. Wait at least 4 hours between doses.</p>
-                </div>
-              </div>
-
-              <!-- Pillbox Compartment Hint -->
-              <div id="sync-guidance-box" class="sync-guidance-box">
-                <div class="guidance-content">
-                  <span class="guidance-title">Smart Pillbox Location:</span>
-                  <span id="guidance-text" class="guidance-desc">This medication belongs in <strong>Compartment 1 (Morning)</strong>.</span>
-                </div>
-              </div>
             </div>
           </section>
 
@@ -456,6 +365,16 @@
               <p class="page-sub-desc">As the caregiver, you prepare and load the pills into Jean's smart compartments.</p>
             </div>
 
+            <!-- Refill Scanner Callout -->
+            <div class="cg-scanner-callout">
+              <div class="csc-icon">📷</div>
+              <div class="csc-info">
+                <strong>Verify &amp; Load New Medication</strong>
+                <span>Scan medicine packaging to check dosage and auto-assign compartments.</span>
+              </div>
+              <button class="action-btn btn-primary" id="btn-cg-goto-scan">Open Scanner 📷</button>
+            </div>
+
             <div class="pillbox-chassis">
               <div class="pillbox-top-strip">
                 <div class="led-strip-label">Device: dosette_box_42</div>
@@ -488,6 +407,98 @@
               <button id="btn-cli-trigger-alert" class="btn-hardware-action btn-danger-action">
                 🚨 Trigger Missed Dose Alert (>30m)
               </button>
+            </div>
+          </section>
+
+          <!-- TAB: CAREGIVER SCAN & MEDICATION VERIFICATION -->
+          <section id="tab-cg-scan" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Medicine Scanner &amp; AI Assistant 📷</h2>
+              <p class="page-sub-desc">Scan prescription boxes with your camera or barcode to verify dosage and load pills directly into Jean's smart compartments.</p>
+            </div>
+
+            <!-- Scanner Viewport Card -->
+            <div class="card scanner-card">
+              <div class="scanner-preview" id="scanner-viewport">
+                <div class="scanner-laser" id="scanner-laser"></div>
+                <div class="scanner-target-box">
+                  <div class="target-corner top-left"></div>
+                  <div class="target-corner top-right"></div>
+                  <div class="target-corner bottom-left"></div>
+                  <div class="target-corner bottom-right"></div>
+                  <div class="target-center-pill">
+                    <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                      <path d="m8.5 8.5 7 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="scanner-tip" id="scanner-tip-text">Point camera at medicine barcode</div>
+                <video id="webcam-video" autoplay playsinline class="webcam-video hidden"></video>
+              </div>
+
+              <!-- Quick Demo Presets -->
+              <div class="scan-controls">
+                <div class="quick-scans-label">Simulate instant packaging scan:</div>
+                <div class="quick-scans-buttons">
+                  <button id="btn-scan-dafalgan" class="scan-preset-btn active" data-barcode="3400930000001">
+                    <span class="med-name">Dafalgan 1g</span>
+                    <span class="med-meta">Paracetamol (Pain &amp; Fever)</span>
+                  </button>
+                  <button id="btn-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002">
+                    <span class="med-name">Lipitor 20mg</span>
+                    <span class="med-meta">Atorvastatin (Cholesterol)</span>
+                  </button>
+                </div>
+
+                <div class="custom-barcode-row">
+                  <input type="text" id="input-barcode" placeholder="Enter or scan barcode..." value="3400930000001">
+                  <button id="btn-custom-scan" class="action-btn btn-secondary">Scan</button>
+                  <button id="btn-toggle-camera" class="action-btn btn-outline" title="Toggle camera">📷 Camera</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plain English AI Begrip Card -->
+            <div id="ai-result-card" class="card ai-result-card">
+              <div class="ai-result-header">
+                <div class="med-badge-title">
+                  <span class="pill-color-dot" id="med-dot"></span>
+                  <div>
+                    <h3 id="med-brand-name" class="med-brand-name">Dafalgan 1g</h3>
+                    <span id="med-generic-name" class="med-generic-name">Paracetamol • 1 tablet (white, oval)</span>
+                  </div>
+                </div>
+                <button id="btn-speech" class="speech-btn" title="Read explanation aloud in clear English">
+                  <span id="speech-btn-label">Read Aloud 🔊</span>
+                </button>
+              </div>
+
+              <!-- Big Plain Language Highlight -->
+              <div class="plain-language-box">
+                <div class="pl-label">💡 WHAT DOES THIS MEDICINE DO?</div>
+                <p id="med-summary" class="pl-highlight">"This is Dafalgan for your headache and fever. Take 1 tablet with water."</p>
+              </div>
+
+              <div class="ai-details-grid">
+                <div class="ai-detail-block">
+                  <div class="block-label">How to take:</div>
+                  <p id="med-instructions">Take 1 tablet with a large glass of water when in pain. Maximum 3 times per day.</p>
+                </div>
+                <div class="ai-detail-block block-warning">
+                  <div class="block-label">Important warning:</div>
+                  <p id="med-warnings">Do not drink alcohol. Wait at least 4 hours between doses.</p>
+                </div>
+              </div>
+
+              <!-- Pillbox Compartment Hint & Quick Refill Action -->
+              <div id="sync-guidance-box" class="sync-guidance-box">
+                <div class="guidance-content">
+                  <span class="guidance-title">Smart Pillbox Assignment:</span>
+                  <span id="guidance-text" class="guidance-desc">Caregiver assignment: <strong>Compartment 1 (Morning)</strong>.</span>
+                </div>
+                <button id="btn-quick-fill" class="btn-quick-fill">Load into Box #1 📥</button>
+              </div>
             </div>
           </section>
 
@@ -585,10 +596,6 @@
             <span class="tab-icon">📅</span>
             <span class="tab-label">Schedule</span>
           </button>
-          <button class="bottom-tab-btn" data-tab="tab-patient-scan">
-            <span class="tab-icon">📷</span>
-            <span class="tab-label">Scan &amp; AI</span>
-          </button>
           <button class="bottom-tab-btn tab-with-badge" data-tab="tab-patient-inbox">
             <span class="tab-icon">📬</span>
             <span class="tab-badge" id="patient-unread-badge">1</span>
@@ -609,6 +616,10 @@
           <button class="bottom-tab-btn" data-tab="tab-cg-pillbox">
             <span class="tab-icon">📦</span>
             <span class="tab-label">Pillbox</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-cg-scan">
+            <span class="tab-icon">📷</span>
+            <span class="tab-label">Scan Meds</span>
           </button>
           <button class="bottom-tab-btn tab-with-badge" data-tab="tab-cg-inbox">
             <span class="tab-icon">📬</span>

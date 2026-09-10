@@ -1978,6 +1978,39 @@ body.mode-desktop-split .mobile-bottom-nav {
 }
 
 /* Caregiver Hardware View */
+.cg-scanner-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(13, 148, 136, 0.12));
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.85rem;
+}
+
+.cg-scanner-callout .csc-icon {
+  font-size: 1.5rem;
+}
+
+.cg-scanner-callout .csc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.cg-scanner-callout .csc-info strong {
+  font-size: calc(0.85rem * var(--font-scale));
+  color: #fff;
+}
+
+.cg-scanner-callout .csc-info span {
+  font-size: calc(0.72rem * var(--font-scale));
+  color: var(--text-muted);
+}
+
 .pillbox-chassis {
   background: linear-gradient(145deg, #12192a, #0a0e17);
   border: 1px solid rgba(255, 255, 255, 0.1);

@@ -101,9 +101,11 @@ const dom = {
   schedSlotEvening: document.getElementById('sched-slot-evening'),
   schedCheckEvening: document.getElementById('sched-check-evening'),
 
-  // Patient Navigation Shortcuts
+  // Navigation Shortcuts
+  btnPatientGotoSchedule: document.getElementById('btn-patient-goto-schedule'),
   btnPatientGotoScan: document.getElementById('btn-patient-goto-scan'),
   btnPatientGotoInbox: document.getElementById('btn-patient-goto-inbox'),
+  btnCgGotoScan: document.getElementById('btn-cg-goto-scan'),
 
   // Scanner & AI Explanation Card
   scannerLaser: document.getElementById('scanner-laser'),
@@ -1276,14 +1278,22 @@ function displayMedicationExplanation(med) {
   if (assignedComp) {
     dom.guidanceText.innerHTML = `Caregiver assignment: <strong>Compartment ${assignedComp.compartment_index} (${assignedComp.label})</strong>.`;
     if (dom.btnQuickFill) {
-      dom.btnQuickFill.textContent = `Load into Compartment ${assignedComp.compartment_index}`;
-      dom.btnQuickFill.onclick = () => fillCompartmentAction(assignedComp.compartment_index, med.id);
+      dom.btnQuickFill.style.display = 'inline-block';
+      dom.btnQuickFill.textContent = `Load into Box #${assignedComp.compartment_index} 📥`;
+      dom.btnQuickFill.onclick = async () => {
+        await fillCompartmentAction(assignedComp.compartment_index, med.id);
+        activateTab('tab-cg-pillbox');
+      };
     }
   } else {
-    dom.guidanceText.innerHTML = `No fixed compartment assigned. Caregiver can pick an empty compartment.`;
+    dom.guidanceText.innerHTML = `No fixed compartment assigned. You can load this into an empty compartment.`;
     if (dom.btnQuickFill) {
-      dom.btnQuickFill.textContent = `Load into Compartment 2`;
-      dom.btnQuickFill.onclick = () => fillCompartmentAction(2, med.id);
+      dom.btnQuickFill.style.display = 'inline-block';
+      dom.btnQuickFill.textContent = `Load into Compartment 2 📥`;
+      dom.btnQuickFill.onclick = async () => {
+        await fillCompartmentAction(2, med.id);
+        activateTab('tab-cg-pillbox');
+      };
     }
   }
 }
@@ -1520,23 +1530,23 @@ function runPitchStep(stepNumber) {
   document.querySelectorAll('.pitch-steps .step-btn').forEach((btn) => btn.classList.remove('active-step'));
 
   if (stepNumber === 1) {
-    dom.pitchStep1.classList.add('active-step');
-    switchRole('PATIENT');
-    activateTab('tab-patient-scan');
-    dom.btnScanDafalgan.click();
-    showToast('Step 1: Medication packaging (Dafalgan 1g) scanned in Patient mode!', 'success');
-  } else if (stepNumber === 2) {
-    dom.pitchStep2.classList.add('active-step');
-    toggleMedExplanationSpeech();
-    showToast('Step 2: AI explains leaflet in plain English & reads aloud!', 'info');
-  } else if (stepNumber === 3) {
-    dom.pitchStep3.classList.add('active-step');
+    if (dom.pitchStep1) dom.pitchStep1.classList.add('active-step');
     switchRole('CAREGIVER');
-    activateTab('tab-cg-dashboard');
+    activateTab('tab-cg-scan');
+    dom.btnScanDafalgan.click();
+    showToast('Step 1: Caregiver Sophie scans medication box (Dafalgan 1g) to verify & refill!', 'success');
+  } else if (stepNumber === 2) {
+    if (dom.pitchStep2) dom.pitchStep2.classList.add('active-step');
+    toggleMedExplanationSpeech();
+    showToast('Step 2: AI explains prescription & recommends pillbox compartment!', 'info');
+  } else if (stepNumber === 3) {
+    if (dom.pitchStep3) dom.pitchStep3.classList.add('active-step');
+    switchRole('CAREGIVER');
+    activateTab('tab-cg-pillbox');
     fillCompartmentAction(1, 'med_001');
     showToast('Step 3: Caregiver refilled Compartment 1 (Morning) with Dafalgan 1g!', 'info');
   } else if (stepNumber === 4) {
-    dom.pitchStep4.classList.add('active-step');
+    if (dom.pitchStep4) dom.pitchStep4.classList.add('active-step');
     switchRole('PATIENT');
     activateTab('tab-patient-today');
     openCompartmentAction(1);
@@ -1546,7 +1556,7 @@ function runPitchStep(stepNumber) {
       showToast('Step 4: Intake confirmed! Caregiver dashboard updated with green checkmark.', 'success');
     }, 600);
   } else if (stepNumber === 'alert') {
-    dom.pitchStepAlert.classList.add('active-step');
+    if (dom.pitchStepAlert) dom.pitchStepAlert.classList.add('active-step');
     setSimulatedTime('19:35', true);
     setTimeout(() => {
       switchRole('CAREGIVER');
@@ -1604,9 +1614,11 @@ function setupEventListeners() {
     });
   });
 
-  // Patient Quick Nav Buttons
-  dom.btnPatientGotoScan.addEventListener('click', () => activateTab('tab-patient-scan'));
-  dom.btnPatientGotoInbox.addEventListener('click', () => activateTab('tab-patient-inbox'));
+  // Navigation Shortcuts
+  if (dom.btnPatientGotoSchedule) dom.btnPatientGotoSchedule.addEventListener('click', () => activateTab('tab-patient-schedule'));
+  if (dom.btnPatientGotoScan) dom.btnPatientGotoScan.addEventListener('click', () => activateTab('tab-cg-scan'));
+  if (dom.btnPatientGotoInbox) dom.btnPatientGotoInbox.addEventListener('click', () => activateTab('tab-patient-inbox'));
+  if (dom.btnCgGotoScan) dom.btnCgGotoScan.addEventListener('click', () => activateTab('tab-cg-scan'));
 
   // Scanner Presets & Custom
   dom.btnScanDafalgan.addEventListener('click', () => {

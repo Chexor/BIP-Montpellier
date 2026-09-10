@@ -55,7 +55,7 @@ Bovenaan de webapplicatie bevindt zich de **JURY PITCH DEMO FLOW** balk met 1-kl
   ```bash
   npm run cli scan-pack 3400930000001
   ```
-- **Jury Pitch**: *"Wanneer Jean Dupont of zijn dochter een nieuw doosje Dafalgan 1g in handen heeft, scant de AI Companion de verpakking."*
+- **Jury Pitch**: *"Wanneer mantelzorger Sophie de medicatie voor Jean voorbereidt, scant zij het doosje Dafalgan 1g via de Caregiver Scanner om dosering en vakjesindeling te verifiëren."*
 
 ### Stap 2: AI Begrip & Stemassistentie
 - **Actie**: Klik op **"2. AI Begrip & Voice"** (of druk op "Lees voor 🔊" in de kaart).
