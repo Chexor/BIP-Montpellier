@@ -3599,7 +3599,7 @@ body.role-device .device-hold-progress {
 
 body.role-device .device-call-hold.holding .device-hold-progress {
   height: 100%;
-  transition: height 3.5s linear;
+  transition: height 3s linear;
 }
 
 body.role-device .device-dose-info .device-dose-action-icon,

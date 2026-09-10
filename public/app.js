@@ -11,7 +11,7 @@ const state = {
   layoutMode: 'mobile-phone', // 'mobile-phone' | 'desktop-split'
   seniorMode: false,
   isLocked: false,
-  simulatedTime: '08:00', // '08:00' | '12:30' | '19:00' | '19:10' | '19:35'
+  simulatedTime: '15:00', // '15:00' (idle) | '08:00' | '12:30' | '19:00' | '19:10' | '19:35'
 
   pillbox: null,
   schedule: null,
@@ -22,6 +22,8 @@ const state = {
   webcamStream: null,
   deviceDosePreview: false,
   deviceDosePreviewTimer: null,
+  deviceTakeover: null,      // 'info' | 'one-left' | 'all-clear' while a full-screen unit view is up
+  _devicePanelKey: null,     // 'wheel' | 'dose' — last panel shown, gates the pop-in animation
 };
 
 // Apache and Live Preview serve the UI separately from the Node API.
@@ -154,6 +156,9 @@ const dom = {
   btnPatientCallDoctor: document.getElementById('btn-patient-call-doctor'),
   btnPatientCallPharmacy: document.getElementById('btn-patient-call-pharmacy'),
   btnPatientCall112: document.getElementById('btn-patient-call-112'),
+  btnPatientDirectSophie: document.getElementById('btn-patient-direct-sophie'),
+  btnPatientDirectDoctor: document.getElementById('btn-patient-direct-doctor'),
+  btnPatientDirect112: document.getElementById('btn-patient-direct-112'),
 
   // Caregiver Elements
   caregiverAlertBanner: document.getElementById('caregiver-alert-banner'),
@@ -215,8 +220,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSSE();
   await loadInitialData();
 
-  // Initialize simulated time at 08:00 (Morning)
-  setSimulatedTime('08:00', false);
+  // Initialize simulated time at 15:00 (afternoon — no dose due, unit idle)
+  setSimulatedTime('15:00', false);
 
   // Set default scan preview
   if (state.medications.length > 0) {
@@ -420,6 +425,19 @@ function renderSpotlightCard() {
     dom.spotlightMedName.textContent = 'No Medication Due at Lunch';
     dom.spotlightInstructionText.textContent = 'Enjoy your lunch! Your next scheduled dose is Lipitor 20mg at 19:00 (Evening).';
     dom.spotlightHintBox.innerHTML = '👉 <strong>Compartment 2 (Noon)</strong> is empty. Compartment 3 opens at 19:00.';
+    dom.btnSpotlightOpen.textContent = '⏳ Compartment 3 opens at 19:00';
+    dom.btnSpotlightOpen.disabled = true;
+    dom.btnSpotlightOpen.className = 'action-btn btn-locked-disabled';
+    return;
+  }
+
+  // Case 2b: 15:00 Afternoon — nothing scheduled, unit idle
+  if (state.simulatedTime === '15:00') {
+    dom.spotlightStatusTag.textContent = '🛋️ NOTHING DUE RIGHT NOW';
+    dom.spotlightTimeText.textContent = '15:00 (Afternoon)';
+    dom.spotlightMedName.textContent = 'No Medication Due';
+    dom.spotlightInstructionText.textContent = 'Nothing to take this afternoon. Your next scheduled dose is Lipitor 20mg at 19:00 (Evening).';
+    dom.spotlightHintBox.innerHTML = '👉 The pillbox is resting. <strong>Compartment 3</strong> opens at 19:00.';
     dom.btnSpotlightOpen.textContent = '⏳ Compartment 3 opens at 19:00';
     dom.btnSpotlightOpen.disabled = true;
     dom.btnSpotlightOpen.className = 'action-btn btn-locked-disabled';
@@ -992,7 +1010,9 @@ function toggleLayoutMode() {
 function renderAll() {
   renderHardwareStatus();
   renderCompartments();
-  renderDeviceWheel();
+  // Don't redraw the unit screen while a full-screen takeover (med info / cup
+  // camera) is up — a background refresh would flip it back to DOSE READY.
+  if (!state.deviceTakeover) renderDeviceWheel();
   renderTimeline();
   renderInboxMessages();
   renderPatientSchedule();
@@ -1028,6 +1048,7 @@ function currentSlotIndex() {
 
 function renderDeviceWheel() {
   if (!dom.deviceWheel || !state.pillbox?.compartments || !dom.deviceDoseScreen) return;
+  state.deviceTakeover = null;   // reaching the wheel/dose screen ends any takeover view
 
   const compartments = state.pillbox.compartments;
   const currentIndex = currentSlotIndex();
@@ -1044,39 +1065,73 @@ function renderDeviceWheel() {
   dom.deviceWheel.style.display = hasDose ? 'none' : '';
   dom.deviceDoseScreen.style.display = hasDose ? 'flex' : 'none';
   if (deviceLegend) deviceLegend.style.display = hasDose ? 'none' : '';
+  // Only play the pop-in animation when the visible panel actually changes
+  // (wheel <-> dose screen). Plain re-renders (SSE refresh, demo nudges) keep
+  // the current panel steady instead of flashing it again and again.
   const visibleDevicePanel = hasDose ? dom.deviceDoseScreen : dom.deviceWheel;
-  visibleDevicePanel.classList.remove('device-fade-in');
-  void visibleDevicePanel.offsetWidth;
-  visibleDevicePanel.classList.add('device-fade-in');
+  const panelKey = hasDose ? 'dose' : 'wheel';
+  if (state._devicePanelKey !== panelKey) {
+    state._devicePanelKey = panelKey;
+    visibleDevicePanel.classList.remove('device-fade-in');
+    void visibleDevicePanel.offsetWidth;
+    visibleDevicePanel.classList.add('device-fade-in');
+  }
   if (hasDose) {
-    const meds = compMeds(currentCompartment);
-    const medication = meds[0] || null;
-    const medicationName = meds.length > 1
-      ? `${meds.length} tablets`
-      : (medication?.brand_name || 'Scheduled medication');
+    // "DOSE READY" only when the simulated clock is actually at a dispensing
+    // time. Otherwise (e.g. tapping the idle wheel at 15:00 to peek) it's just
+    // a look-ahead, so label it "NEXT DOSE" and show the slot's own time.
+    const isRealDoseTime = ['08:00', '19:00', '19:10', '19:35'].includes(state.simulatedTime);
+
+    // Normally show the medicine in the compartment at the opening. If that
+    // slot is empty (dose already taken, or nothing loaded), look ahead and
+    // name the next compartment that actually has medicine instead of the
+    // vague "Scheduled medication".
+    let screenComp = currentCompartment;
+    let screenMeds = compMeds(screenComp);
+    let doseLabel = isRealDoseTime ? 'DOSE READY' : 'NEXT DOSE';
+    let subLine = isRealDoseTime
+      ? `Compartment ${currentIndex} · ${state.simulatedTime}`
+      : `Compartment ${currentIndex}${currentCompartment?.target_time ? ` · ${currentCompartment.target_time}` : ''}`;
+
+    if (screenMeds.length === 0) {
+      const filledAhead = compartments
+        .filter((c) => compMeds(c).length > 0)
+        .sort((a, b) => a.compartment_index - b.compartment_index);
+      const next = filledAhead.find((c) => c.compartment_index > currentIndex) || filledAhead[0];
+      if (next) {
+        screenComp = next;
+        screenMeds = compMeds(next);
+        doseLabel = 'NEXT DOSE';
+        subLine = `Compartment ${next.compartment_index}${next.target_time ? ` · ${next.target_time}` : ''}`;
+      } else {
+        doseLabel = 'ALL DONE';
+        subLine = 'No more doses scheduled';
+      }
+    }
+
+    const medicationName = screenMeds.length > 1
+      ? `${screenMeds.length} tablets`
+      : (screenMeds[0]?.brand_name || 'No medicine loaded');
     dom.deviceDoseScreen.innerHTML = `
       <div class="device-dose-top">
-        <span class="device-dose-label">DOSE READY</span>
+        <span class="device-dose-label">${doseLabel}</span>
         <strong>${medicationName}</strong>
-        <span>Compartment ${currentIndex} · ${state.simulatedTime}</span>
+        <span>${subLine}</span>
       </div>
       <div class="device-dose-bottom">
         <button class="device-dose-info" type="button" aria-label="Medication information" title="Medication information">
           <span class="device-dose-action-icon">i</span>
         </button>
-        <button class="device-call-hold" type="button" aria-label="Call caregiver" title="Call caregiver">
+        <button class="device-call-hold" type="button" aria-label="Hold to call caregiver" title="Hold 3s to call caregiver">
+          <span class="device-hold-progress"></span>
           <span class="device-dose-action-icon">☎</span>
         </button>
       </div>
     `;
     const infoButton = dom.deviceDoseScreen.querySelector('.device-dose-info');
     const callButton = dom.deviceDoseScreen.querySelector('.device-call-hold');
-    infoButton.addEventListener('click', () => showDeviceMedInfo(currentCompartment, medicationName));
-    callButton.addEventListener('click', () => {
-      speakText('Calling your caregiver Sophie.');
-      showToast('Calling caregiver Sophie Dupont.', 'success');
-      alert('📞 Calling caregiver Sophie Dupont\n+32 470 12 34 56');
-    });
+    infoButton.addEventListener('click', () => showDeviceMedInfo(screenComp, medicationName));
+    bindDeviceCallHold(callButton);
   }
 
   dom.deviceWheel.innerHTML = `
@@ -1113,6 +1168,37 @@ function renderDeviceWheel() {
   };
 }
 
+// Press-and-hold (3s) on the unit's ☎ button before the caregiver call goes out.
+function bindDeviceCallHold(btn) {
+  if (!btn) return;
+  let holdTimer = null;
+
+  const cancelHold = () => {
+    if (holdTimer) { window.clearTimeout(holdTimer); holdTimer = null; }
+    btn.classList.remove('holding');
+  };
+
+  const startHold = (e) => {
+    if (e) e.preventDefault();
+    if (holdTimer) return;
+    btn.classList.add('holding');
+    holdTimer = window.setTimeout(() => {
+      holdTimer = null;
+      btn.classList.remove('holding');
+      speakText('Calling your caregiver Sophie.');
+      showToast('Calling caregiver Sophie Dupont.', 'success');
+      alert('📞 Calling caregiver Sophie Dupont\n+32 470 12 34 56');
+    }, 3000);
+  };
+
+  btn.addEventListener('pointerdown', startHold);
+  btn.addEventListener('pointerup', cancelHold);
+  btn.addEventListener('pointerleave', cancelHold);
+  btn.addEventListener('pointercancel', cancelHold);
+  // ignore a plain click — the hold timer is the only way to place the call
+  btn.addEventListener('click', (e) => e.preventDefault());
+}
+
 function deviceScreenTakeover() {
   dom.deviceDoseScreen.classList.remove('hidden');
   dom.deviceDoseScreen.style.display = 'flex';
@@ -1125,6 +1211,7 @@ function deviceScreenTakeover() {
 // "i" button: speak a plain, short explanation and show it big on the screen.
 function showDeviceMedInfo(comp, medicationName) {
   if (!dom.deviceDoseScreen) return;
+  state.deviceTakeover = 'info';
   deviceScreenTakeover();
 
   const meds = compMeds(comp);
@@ -1169,6 +1256,7 @@ function showDeviceCup(cupState) {
     return;
   }
 
+  state.deviceTakeover = cupState;
   deviceScreenTakeover();
 
   const conf = {
@@ -2004,7 +2092,7 @@ async function resetDemoData() {
     if (state.medications.length > 0) {
       displayMedicationExplanation(state.medications[0]);
     }
-    setSimulatedTime('08:00', false);
+    setSimulatedTime('15:00', false);
     showToast('🔄 Demo restored to initial state!', 'info');
   } catch (err) {
     console.error('Reset error:', err);
@@ -2334,21 +2422,34 @@ function setupEventListeners() {
   dom.btnToggleCamera.addEventListener('click', toggleWebcam);
   dom.btnSpeech.addEventListener('click', toggleMedExplanationSpeech);
 
-  // Patient Emergency Calls
-  dom.btnPatientCallSophie.addEventListener('click', () => {
-    speakText('Calling caregiver Sophie Dupont.');
-    alert('📞 Calling Sophie Dupont (+32 470 12 34 56)...');
-  });
+  // Patient Emergency Calls — one helper wired to every call button on the
+  // patient app (the simple home shortcuts AND the Help & Contacts tab).
+  function patientPlaceCall(spoken, popup) {
+    speakText(spoken);
+    showToast(popup, 'success');
+    alert(popup);
+  }
+  const callSophie = () => patientPlaceCall(
+    'Calling caregiver Sophie Dupont.',
+    '📞 Calling Sophie Dupont (+32 470 12 34 56)...',
+  );
+  const callDoctor = () => patientPlaceCall(
+    'Calling family physician Dr. Peeters.',
+    '👨‍⚕️ Calling Family Doctor Dr. Peeters (+32 2 555 01 99)...',
+  );
+  const callPharmacy = () => patientPlaceCall(
+    'Calling Central Pharmacy.',
+    '💊 Calling Central Pharmacy (+32 2 555 01 44)...',
+  );
+  const call112 = () => patientPlaceCall(
+    'Calling emergency services. One one two.',
+    '🚨 Calling Emergency Services (112)...',
+  );
 
-  dom.btnPatientCallDoctor.addEventListener('click', () => {
-    speakText('Calling family physician Dr. Peeters.');
-    alert('👨‍⚕️ Calling Family Doctor Dr. Peeters (+32 2 555 01 99)...');
-  });
-
-  dom.btnPatientCallPharmacy.addEventListener('click', () => {
-    speakText('Calling Central Pharmacy.');
-    alert('💊 Calling Central Pharmacy (+32 2 555 01 44)...');
-  });
+  [dom.btnPatientCallSophie, dom.btnPatientDirectSophie].forEach((b) => b && b.addEventListener('click', callSophie));
+  [dom.btnPatientCallDoctor, dom.btnPatientDirectDoctor].forEach((b) => b && b.addEventListener('click', callDoctor));
+  if (dom.btnPatientCallPharmacy) dom.btnPatientCallPharmacy.addEventListener('click', callPharmacy);
+  [dom.btnPatientCall112, dom.btnPatientDirect112].forEach((b) => b && b.addEventListener('click', call112));
 
   // Caregiver Messaging Form
   document.querySelectorAll('.preset-msg-btn').forEach((btn) => {

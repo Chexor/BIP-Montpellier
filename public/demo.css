@@ -56,15 +56,13 @@ html, body {
   display: grid;
   gap: 10px;
   grid-template-columns: minmax(0, 1fr) minmax(270px, 345px) minmax(320px, 400px);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:
-    "b d e"
     "a d e"
     "c c c";
   overflow: hidden;
 }
 
-.panel-b { grid-area: b; }
 .panel-a { grid-area: a; }
 .panel-d { grid-area: d; }
 .panel-e { grid-area: e; }
@@ -162,23 +160,6 @@ html, body {
   0% { box-shadow: 0 0 6px rgba(99, 102, 241, 0.4); }
   100% { box-shadow: 0 0 16px rgba(99, 102, 241, 0.8); }
 }
-
-/* ---------- Panel B — narration ---------- */
-.panel-b { display: flex; flex-direction: column; min-height: 0; }
-.b-kicker { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.14em; font-weight: 800; color: var(--primary-teal-hover); }
-.b-headline { font-family: var(--font-display); margin: 4px 0 5px; font-size: 16px; font-weight: 800; letter-spacing: -0.02em; color: #fff; line-height: 1.2; }
-.b-note {
-  margin: 0 0 8px; font-size: 12px; color: var(--text-secondary); line-height: 1.45; flex: 1;
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
-}
-.b-progress { display: flex; gap: 5px; flex: 0 0 auto; }
-.b-progress i {
-  height: 5px; flex: 1; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  transition: background .2s;
-}
-.b-progress i.done { background: var(--primary-teal); }
-.b-progress i.current { background: var(--primary-teal-hover); box-shadow: 0 0 10px var(--primary-teal-glow); }
 
 /* ---------- Panels A / D / E — embedded app ---------- */
 .frame-wrap {
@@ -386,12 +367,11 @@ html, body {
     height: auto;
     grid-template-columns: 1fr;
     grid-template-rows: none;
-    grid-template-areas: "b" "a" "d" "e" "c";
+    grid-template-areas: "a" "d" "e" "c";
     overflow: visible;
   }
   .panel { overflow: visible; }
   .frame-tall, .frame-a { flex: none; }
   .panel-a .frame-wrap { max-width: none; height: 58vh; }
   .panel-d .frame-wrap, .panel-e .frame-wrap { max-width: none; height: 78vh; }
-  .b-note { -webkit-line-clamp: unset; }
 }

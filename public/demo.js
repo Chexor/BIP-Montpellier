@@ -32,15 +32,24 @@ function stripChrome(key) {
       '.smartphone-frame{max-width:none!important;position:relative!important}' +
       'body{overflow-x:hidden}' +
       /* device: compact the screen so it fits its panel with no scroll */
-      'body.role-device .device-screen-view{min-height:0!important;padding:.7rem .8rem 1rem!important;gap:.4rem!important}' +
-      'body.role-device .device-wheel,body.role-device .device-dose-screen{width:min(66%,14rem)!important}' +
+      'body.role-device .device-screen-view{min-height:0!important;padding:.7rem .8rem 1rem!important;gap:.55rem!important;justify-content:flex-start!important}' +
+      'body.role-device .device-dose-screen{width:min(60%,12.5rem)!important}' +
+      /* idle wheel: shrink the disc, its petals and the hub so it fits the panel */
+      'body.role-device .device-wheel{width:min(46%,9rem)!important;border-width:.4rem!important;margin-top:1.6rem!important}' +
+      'body.role-device .device-wheel-slot{height:6.2rem!important;width:1.1rem!important;left:calc(50% - .55rem)!important;border-radius:.5rem!important}' +
+      'body.role-device .device-wheel-center{width:4.6rem!important;height:4.6rem!important;border-width:.2rem!important;font-size:.6rem!important}' +
+      'body.role-device .device-wheel-center strong{font-size:1rem!important}' +
       'body.role-device .device-screen-heading h2{font-size:1.1rem!important}' +
       'body.role-device .device-screen-heading p{font-size:.72rem!important}' +
-      'body.role-device .device-screen-legend{font-size:.62rem!important;gap:.45rem!important}' +
+      'body.role-device .device-screen-legend{display:none!important}' +
       'body.role-device .device-dose-top{padding:.4rem!important}' +
       'body.role-device .device-dose-top strong{font-size:1rem!important}' +
       'body.role-device .device-dose-label{font-size:.58rem!important}' +
       'body.role-device .device-dose-top span:last-child{font-size:.64rem!important}' +
+      /* keep the ℹ / ☎ glyphs inside the circular screen so nothing clips */
+      'body.role-device .device-dose-action-icon{font-size:1.85rem!important}' +
+      'body.role-device .device-dose-info .device-dose-action-icon{transform:translate(.5rem,-.9rem)!important}' +
+      'body.role-device .device-call-hold .device-dose-action-icon{transform:translate(-.5rem,-.9rem)!important}' +
       'body.role-device .device-simple{padding:15% 19%!important;gap:.22rem!important}' +
       'body.role-device .ds-title{font-size:.95rem!important}' +
       'body.role-device .ds-line{font-size:.64rem!important;line-height:1.2!important}' +
@@ -134,13 +143,14 @@ function focus(key) {
 }
 
 function setNarr(kicker, head, note) {
-  el('b-kicker').textContent = kicker;
-  el('b-headline').textContent = head;
-  el('b-note').textContent = note;
+  // Panel B (narration) was removed — keep this a safe no-op if it's absent.
+  if (el('b-kicker')) el('b-kicker').textContent = kicker;
+  if (el('b-headline')) el('b-headline').textContent = head;
+  if (el('b-note')) el('b-note').textContent = note;
 }
 
 /* ---------- 3 scripted walkthroughs ---------- */
-let demoTime = '08:00';                 // last simulated time the demo applied
+let demoTime = '15:00';                 // last simulated time the demo applied (15:00 = idle default)
 let scannedMedId = null;                // med the caregiver last scanned in the loader flow
 
 const WT = {
@@ -344,12 +354,14 @@ function renderSteps() {
   });
 
   const prog = el('b-progress');
-  prog.innerHTML = '';
-  for (let i = 0; i < wt.steps.length; i += 1) {
-    const dot = document.createElement('i');
-    if (i < reached) dot.className = 'done';
-    if (i === reached) dot.className = 'current';
-    prog.appendChild(dot);
+  if (prog) {
+    prog.innerHTML = '';
+    for (let i = 0; i < wt.steps.length; i += 1) {
+      const dot = document.createElement('i');
+      if (i < reached) dot.className = 'done';
+      if (i === reached) dot.className = 'current';
+      prog.appendChild(dot);
+    }
   }
 
   el('wt-tabs').querySelectorAll('.wt-tab').forEach((b) => {
@@ -371,6 +383,11 @@ function setWalkthrough(key) {
   if (!WT[key]) return;
   activeWt = key;
   reached = -1;
+  // leaving a walkthrough: renderDeviceWheel() clears any full-screen takeover
+  // (med-info / cup-camera) the unit was stuck on and redraws the normal screen
+  inWin('device', (w) => {
+    if (typeof w.renderDeviceWheel === 'function') w.renderDeviceWheel();
+  });
   const wt = WT[key];
   setNarr('WALKTHROUGH', wt.title, 'Click the steps in order — each drives the real patient, caregiver and device apps on the right.');
   renderSteps();
@@ -384,8 +401,8 @@ async function resetDemo() {
   });
   reached = -1;
   scannedMedId = null;
-  demoTime = '08:00';
-  markTime('08:00');
+  demoTime = '15:00';
+  markTime('15:00');
   setWalkthrough(activeWt);
   ['a', 'd', 'e'].forEach((p) => document.querySelector('.panel-' + p).classList.remove('is-focus'));
   updateLockUi();
@@ -518,5 +535,5 @@ document.addEventListener('keydown', (e) => {
 
 setWalkthrough('load');
 updateLockUi();
-markTime('08:00');   /* embeds boot at 08:00 (Morning) */
+markTime('15:00');   /* embeds boot at 15:00 (afternoon — unit idle, nothing due) */
 
