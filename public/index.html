@@ -227,23 +227,67 @@
               <p class="chassis-hint">Refilled weekly by your caregiver Sophie.</p>
             </div>
 
-            <!-- Big Quick Action Buttons -->
-            <div class="patient-quick-grid">
-              <button class="patient-big-action-btn" id="btn-patient-goto-schedule">
-                <span class="btn-big-icon">📅</span>
-                <span class="btn-big-title">My Schedule</span>
-                <span class="btn-big-sub">Weekly dose calendar</span>
+            <!-- Direct Note from Sophie Card (Always visible on John's simplistic home) -->
+            <div class="card patient-sophie-note-card" id="patient-sophie-note-card">
+              <div class="psn-header">
+                <div class="psn-avatar">👩‍⚕️</div>
+                <div class="psn-meta">
+                  <span class="psn-label">Personal Message from Daughter Sophie</span>
+                  <span class="psn-time" id="patient-sophie-time">Just now</span>
+                </div>
+              </div>
+              <p class="psn-message" id="patient-sophie-text">"Hi Dad! Just checking in. Remember to take your pills with water tonight. Love you! ❤️"</p>
+              <button class="psn-speech-btn" id="btn-patient-read-sophie" title="Read Sophie's message aloud">
+                <span>🔊 Read Message Aloud</span>
               </button>
-              <button class="patient-big-action-btn" id="btn-patient-goto-inbox">
-                <span class="btn-big-icon">📬</span>
-                <span class="btn-big-title">My Messages</span>
-                <span class="btn-big-sub" id="patient-inbox-badge-label">1 new message</span>
-              </button>
+            </div>
+
+            <!-- Direct, Easily Accessible Emergency & Help Contacts (No menus!) -->
+            <div class="patient-emergency-section" id="patient-direct-help">
+              <div class="pes-title">Need help? Tap below to call directly:</div>
+              <div class="pes-buttons-list">
+                <button class="pes-call-btn btn-call-sophie-direct" id="btn-patient-direct-sophie">
+                  <span class="pes-icon">📞</span>
+                  <div class="pes-info">
+                    <span class="pes-name">Call Sophie (Daughter)</span>
+                    <span class="pes-sub">+32 470 12 34 56 • Available now</span>
+                  </div>
+                  <span class="pes-arrow">➔</span>
+                </button>
+                <button class="pes-call-btn btn-call-doctor-direct" id="btn-patient-direct-doctor">
+                  <span class="pes-icon">🩺</span>
+                  <div class="pes-info">
+                    <span class="pes-name">Call Dr. Martin</span>
+                    <span class="pes-sub">Family Doctor • Practice Montpellier</span>
+                  </div>
+                  <span class="pes-arrow">➔</span>
+                </button>
+                <button class="pes-call-btn btn-call-emergency-direct" id="btn-patient-direct-112">
+                  <span class="pes-icon">🚨</span>
+                  <div class="pes-info">
+                    <span class="pes-name">Emergency Call (112)</span>
+                    <span class="pes-sub">Immediate help for urgent emergencies</span>
+                  </div>
+                  <span class="pes-arrow">➔</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Compatibility element anchors -->
+            <div style="display:none">
+              <button id="btn-patient-goto-schedule"></button>
+              <button id="btn-patient-goto-inbox"></button>
+              <span id="patient-inbox-badge-label"></span>
             </div>
           </section>
 
           <!-- TAB: PATIENT SCHEDULE (Multi-Day Peace of Mind Calendar) -->
           <section id="tab-patient-schedule" class="tab-page">
+            <div class="patient-nav-header">
+              <button class="btn-patient-back" id="btn-patient-schedule-back">
+                <span class="back-icon">←</span> Back to Today
+              </button>
+            </div>
             <div class="page-title-box">
               <h2 class="page-main-heading">My Weekly Schedule 📅</h2>
               <p class="page-sub-desc">Past days are checked off automatically so you never have to wonder if you took
@@ -295,6 +339,14 @@
 
           <!-- TAB: PATIENT INBOX -->
           <section id="tab-patient-inbox" class="tab-page">
+            <div class="patient-nav-header">
+              <button class="btn-patient-back" id="btn-patient-inbox-back">
+                <span class="back-icon">←</span> Back to Today
+              </button>
+              <button class="btn-patient-lock-shortcut" id="btn-patient-inbox-lock">
+                🔒 Lock Phone &amp; View Push Notifs
+              </button>
+            </div>
             <div class="page-title-box">
               <h2 class="page-main-heading">My Messages</h2>
               <p class="page-sub-desc">Messages and reminders from your daughter Sophie.</p>
@@ -307,6 +359,11 @@
 
           <!-- TAB: PATIENT HELP & EMERGENCY -->
           <section id="tab-patient-help" class="tab-page">
+            <div class="patient-nav-header">
+              <button class="btn-patient-back" id="btn-patient-help-back">
+                <span class="back-icon">←</span> Back to Today
+              </button>
+            </div>
             <div class="page-title-box">
               <h2 class="page-main-heading">Help &amp; Contacts</h2>
               <p class="page-sub-desc">Need assistance or feel unwell? Tap a button below to call immediately.</p>
@@ -336,6 +393,14 @@
                   <span class="em-phone">+32 2 555 01 44 (Medication Advice)</span>
                 </div>
               </button>
+
+              <button class="emergency-contact-btn btn-call-emergency" id="btn-patient-call-112">
+                <span class="em-icon">🚨</span>
+                <div class="em-text">
+                  <span class="em-name">Emergency Call 112</span>
+                  <span class="em-phone">Urgent Medical Assistance</span>
+                </div>
+              </button>
             </div>
           </section>
         </div>
@@ -345,6 +410,21 @@
              Telemetry, Adherence Monitoring & Pill Refill Management
              =================================================================== -->
         <div id="role-view-caregiver" class="role-view hidden">
+
+          <!-- Caregiver Mobile Top Header Bar -->
+          <div class="cg-mobile-app-header">
+            <div class="cg-header-profile">
+              <span class="cg-header-avatar">👩‍⚕️</span>
+              <div class="cg-header-info">
+                <span class="cg-app-brand">DOSETTE CARE</span>
+                <h2 class="cg-header-user">Sophie Dupont</h2>
+              </div>
+            </div>
+            <div class="cg-header-patient-chip" title="Monitoring Jean Dupont">
+              <span class="chip-dot-live"></span>
+              <span>Jean (82) • Live Sync</span>
+            </div>
+          </div>
 
           <!-- TAB: CAREGIVER OVERVIEW & TIMELINE -->
           <section id="tab-cg-timeline" class="tab-page active">
@@ -440,6 +520,20 @@
                 🚨 Trigger Missed Dose Alert (>30m)
               </button>
             </div>
+
+            <!-- Pillbox Compartments Intake & Refill Audit Card -->
+            <div class="card cg-refill-summary-card">
+              <div class="cg-summary-header">
+                <span class="cg-summary-icon">📋</span>
+                <div>
+                  <h3 class="cg-summary-title">Compartment Status &amp; Refill Schedule</h3>
+                  <p class="cg-summary-desc">Live overview of taken doses, previous contents, and required refills for Jean's pillbox.</p>
+                </div>
+              </div>
+              <div class="cg-summary-table-wrap" id="cg-summary-table-wrap">
+                <!-- Dynamically rendered in app.js -->
+              </div>
+            </div>
           </section>
 
           <!-- TAB: CAREGIVER SCAN & MEDICATION VERIFICATION -->
@@ -453,7 +547,7 @@
             <div class="card scanner-card">
               <div class="scanner-preview" id="scanner-viewport">
                 <div class="scanner-laser" id="scanner-laser"></div>
-                <div class="scanner-target-box">
+                <div class="scanner-target-box" id="scanner-target-box">
                   <div class="target-corner top-left"></div>
                   <div class="target-corner top-right"></div>
                   <div class="target-corner bottom-left"></div>
@@ -465,13 +559,32 @@
                     </svg>
                   </div>
                 </div>
-                <div class="scanner-tip" id="scanner-tip-text">Point camera at medicine barcode</div>
+                <div class="scanner-tip" id="scanner-tip-text">Point camera at medicine packaging or barcode</div>
                 <video id="webcam-video" autoplay playsinline class="webcam-video hidden"></video>
+                <div class="scanner-live-badge hidden" id="scanner-live-badge">🔴 LIVE SCANNING</div>
+                <button id="btn-camera-snap" class="btn-camera-snap hidden" title="Scan package in frame">🎯 Scan Frame</button>
               </div>
 
-              <!-- Quick Demo Presets -->
+              <!-- Scanner Mode & Action Controls -->
               <div class="scan-controls">
-                <div class="quick-scans-label">Simulate instant packaging scan:</div>
+                <div class="scan-primary-actions-row">
+                  <button id="btn-toggle-camera" class="action-btn btn-primary btn-camera-toggle" title="Toggle camera feed">
+                    📷 Start Live Camera
+                  </button>
+                  <label for="input-scan-image" class="action-btn btn-secondary btn-upload-label" title="Upload a photo of medicine packaging or barcode">
+                    📁 Upload Photo
+                    <input type="file" id="input-scan-image" accept="image/*" style="display:none">
+                  </label>
+                </div>
+
+                <div class="custom-barcode-row">
+                  <input type="text" id="input-barcode" placeholder="Enter barcode or medicine name..." value="3400930000001">
+                  <input type="hidden" id="input-cg-barcode" value="3400930000001">
+                  <button id="btn-custom-scan" class="action-btn btn-accent">Scan Code</button>
+                  <button id="btn-cg-custom-scan" style="display:none"></button>
+                </div>
+
+                <div class="quick-scans-label">Instant Packaging Presets (Tap to Scan):</div>
                 <div class="quick-scans-buttons">
                   <button id="btn-scan-dafalgan" class="scan-preset-btn active" data-barcode="3400930000001">
                     <span class="med-name">Dafalgan 1g</span>
@@ -481,17 +594,17 @@
                     <span class="med-name">Lipitor 20mg</span>
                     <span class="med-meta">Atorvastatin (Cholesterol)</span>
                   </button>
+                  <button id="btn-scan-asaflow" class="scan-preset-btn" data-barcode="3400930000003">
+                    <span class="med-name">Asaflow 80mg</span>
+                    <span class="med-meta">Acetylsalicylic Acid (Heart)</span>
+                  </button>
+                  <button id="btn-scan-amoxicillin" class="scan-preset-btn" data-barcode="5413787000018">
+                    <span class="med-name">Amoxicillin 500mg</span>
+                    <span class="med-meta">Antibiotic (Infections)</span>
+                  </button>
                   <!-- Compatibility aliases -->
                   <button id="btn-cg-scan-dafalgan" class="scan-preset-btn" data-barcode="3400930000001" style="display:none"></button>
                   <button id="btn-cg-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002" style="display:none"></button>
-                </div>
-
-                <div class="custom-barcode-row">
-                  <input type="text" id="input-barcode" placeholder="Enter or scan barcode..." value="3400930000001">
-                  <input type="hidden" id="input-cg-barcode" value="3400930000001">
-                  <button id="btn-custom-scan" class="action-btn btn-secondary">Scan</button>
-                  <button id="btn-cg-custom-scan" style="display:none"></button>
-                  <button id="btn-toggle-camera" class="action-btn btn-outline" title="Toggle camera">📷 Camera</button>
                 </div>
               </div>
             </div>
@@ -542,8 +655,15 @@
                   <span id="guidance-text" class="guidance-desc">Caregiver assignment: <strong>Compartment 1 (Morning)</strong>.</span>
                   <span id="cg-scan-assign" style="display:none"></span>
                 </div>
-                <button id="btn-quick-fill" class="btn-quick-fill">Load into Box #1 📥</button>
-                <button id="btn-cg-scan-load" style="display:none"></button>
+                <div class="guidance-actions">
+                  <select id="select-target-compartment" class="target-compartment-select" title="Choose compartment to load">
+                    <option value="1">Box #1 (Morning 08:00)</option>
+                    <option value="2">Box #2 (Noon 12:30)</option>
+                    <option value="3">Box #3 (Evening 19:00)</option>
+                  </select>
+                  <button id="btn-quick-fill" class="btn-quick-fill">Load into Box #1 📥</button>
+                  <button id="btn-cg-scan-load" style="display:none"></button>
+                </div>
               </div>
             </div>
 
