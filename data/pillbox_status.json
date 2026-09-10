@@ -1,7 +1,7 @@
 {
   "device_id": "dosette_box_42",
   "battery_level": 88,
-  "last_synced": "2026-09-08T12:00:00Z",
+  "last_synced": "2026-09-10T16:45:07.671Z",
   "compartments": [
     {
       "compartment_index": 1,
@@ -28,17 +28,12 @@
     {
       "compartment_index": 3,
       "label": "Today · Evening",
-      "medication_id": "med_002",
-      "medication_ids": [
-        "med_002",
-        "med_003",
-        "med_004",
-        "med_005"
-      ],
-      "pills_count": 4,
-      "state": "FILLED",
+      "medication_id": null,
+      "medication_ids": [],
+      "pills_count": 0,
+      "state": "TAKEN",
       "target_time": "19:00",
-      "led_active": true
+      "led_active": false
     },
     {
       "compartment_index": 4,

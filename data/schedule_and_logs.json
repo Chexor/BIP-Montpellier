@@ -14,37 +14,10 @@
     {
       "id": "log_102",
       "scheduled_time": "2026-09-08T19:00:00Z",
-      "actual_time": null,
+      "actual_time": "2026-09-10T16:45:07.672Z",
       "compartment_index": 3,
       "medication_name": "Lipitor 20mg",
-      "status": "MISSED",
-      "caregiver_notified": true
-    },
-    {
-      "id": "log_alert_9578",
-      "scheduled_time": "2026-09-10T12:10:19.578Z",
-      "actual_time": null,
-      "compartment_index": 3,
-      "medication_name": "Lipitor 20mg",
-      "status": "MISSED",
-      "caregiver_notified": true
-    },
-    {
-      "id": "log_alert_9592",
-      "scheduled_time": "2026-09-10T12:10:19.592Z",
-      "actual_time": null,
-      "compartment_index": 3,
-      "medication_name": "Lipitor 20mg",
-      "status": "MISSED",
-      "caregiver_notified": true
-    },
-    {
-      "id": "log_alert_9616",
-      "scheduled_time": "2026-09-10T12:10:19.616Z",
-      "actual_time": null,
-      "compartment_index": 3,
-      "medication_name": "Lipitor 20mg",
-      "status": "MISSED",
+      "status": "TAKEN_ON_TIME",
       "caregiver_notified": true
     }
   ]

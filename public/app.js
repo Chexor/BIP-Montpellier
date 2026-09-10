@@ -489,8 +489,8 @@ function renderSpotlightCard() {
       await openCompartmentAction(3);
       speakText('Intake confirmed. Have a good evening John.');
     };
-  } else {
-    // Comp 3 is TAKEN!
+  } else if (comp3 && comp3.state === 'TAKEN') {
+    // Only show "taken" once the dose has actually been dispensed/taken.
     dom.patientNextDoseCard.classList.add('completed-spotlight');
     dom.spotlightStatusTag.textContent = '🎉 ALL DOSES COMPLETED FOR TODAY';
     dom.spotlightTimeText.textContent = `Taken at ${state.simulatedTime}`;
@@ -500,6 +500,16 @@ function renderSpotlightCard() {
     dom.btnSpotlightOpen.textContent = '✔ Evening Dose Taken (Compartment 3)';
     dom.btnSpotlightOpen.disabled = true;
     dom.btnSpotlightOpen.className = 'action-btn btn-completed';
+  } else {
+    // Comp 3 is empty — nothing loaded for this evening, so nothing to take yet.
+    dom.spotlightStatusTag.textContent = '🌙 NO EVENING DOSE LOADED';
+    dom.spotlightTimeText.textContent = `${state.simulatedTime} (Evening)`;
+    dom.spotlightMedName.textContent = 'No Medication Due';
+    dom.spotlightInstructionText.textContent = 'Compartment 3 has not been loaded, so there is no evening dose to take right now.';
+    dom.spotlightHintBox.innerHTML = '👉 <strong>Compartment 3 (Evening)</strong> is empty. Your caregiver loads it before the dose is due.';
+    dom.btnSpotlightOpen.textContent = '— No evening dose loaded';
+    dom.btnSpotlightOpen.disabled = true;
+    dom.btnSpotlightOpen.className = 'action-btn btn-locked-disabled';
   }
 }
 
