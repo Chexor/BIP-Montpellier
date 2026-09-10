@@ -17,7 +17,7 @@
       <span class="tag tag-corner">A</span>
       <span class="device-pill pill-device">Dosi · physical unit</span>
       <div class="frame-wrap frame-a">
-        <iframe id="fr-device" title="Dosette device display" src="index.html" loading="eager"></iframe>
+        <iframe id="fr-device" title="Dosette device display" src="index.html?demoEmbed=1" loading="eager"></iframe>
       </div>
     </section>
 
@@ -31,7 +31,7 @@
         </button>
       </div>
       <div class="frame-wrap frame-tall">
-        <iframe id="fr-patient" title="Patient app — John" src="index.html" loading="eager"></iframe>
+        <iframe id="fr-patient" title="Patient app — John" src="index.html?demoEmbed=1" loading="eager"></iframe>
       </div>
     </section>
 
@@ -45,7 +45,7 @@
         </button>
       </div>
       <div class="frame-wrap frame-tall">
-        <iframe id="fr-caregiver" title="Caregiver app — Sophie" src="index.html" loading="eager"></iframe>
+        <iframe id="fr-caregiver" title="Caregiver app — Sophie" src="index.html?demoEmbed=1" loading="eager"></iframe>
       </div>
     </section>
 
@@ -58,7 +58,11 @@
           <button class="wt-tab" data-wt="dispense">② Dispense &amp; take</button>
           <button class="wt-tab" data-wt="missed">③ Missed dose</button>
         </div>
-        <button class="btn-reset" id="btn-reset">Reset demo</button>
+        <div class="demo-voice-controls" aria-label="Dosi voice controls">
+          <button class="btn-voice" id="btn-demo-voice-toggle" type="button" aria-pressed="true">Dosi voice on</button>
+          <button class="btn-voice" id="btn-demo-voice-replay" type="button">Replay voice</button>
+          <button class="btn-reset" id="btn-reset">Reset demo</button>
+        </div>
       </div>
 
       <div class="c-groups">

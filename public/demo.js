@@ -15,6 +15,65 @@ const ROLE_OF = { device: 'DEVICE', patient: 'PATIENT', caregiver: 'CAREGIVER' }
 
 const el = (id) => document.getElementById(id);
 
+/* ---------- Pocket TTS Mary voice ---------- */
+let demoVoiceEnabled = true;
+let demoVoiceAudio = null;
+let currentVoiceKey = null;
+
+function voiceSrc(key) {
+  return key ? `/assets/audio/demo/${key}.wav` : null;
+}
+
+function setVoicePlaying(isPlaying) {
+  el('btn-demo-voice-replay')?.classList.toggle('is-playing', isPlaying);
+}
+
+function updateVoiceControls() {
+  const toggle = el('btn-demo-voice-toggle');
+  if (toggle) {
+    toggle.classList.toggle('is-muted', !demoVoiceEnabled);
+    toggle.setAttribute('aria-pressed', String(demoVoiceEnabled));
+    toggle.textContent = demoVoiceEnabled ? 'Dosi voice on' : 'Dosi voice off';
+  }
+
+  const replay = el('btn-demo-voice-replay');
+  if (replay) {
+    replay.disabled = !currentVoiceKey;
+    replay.textContent = currentVoiceKey ? 'Replay Dosi' : 'No Dosi line';
+  }
+}
+
+function stopDemoVoice() {
+  if (!demoVoiceAudio) return;
+  demoVoiceAudio.pause();
+  demoVoiceAudio.currentTime = 0;
+  setVoicePlaying(false);
+}
+
+function clearDemoVoice() {
+  stopDemoVoice();
+  currentVoiceKey = null;
+  updateVoiceControls();
+}
+
+function playDemoVoice(key, { force = false } = {}) {
+  const src = voiceSrc(key);
+  if (!src) return;
+  currentVoiceKey = key;
+  updateVoiceControls();
+
+  if (!demoVoiceEnabled && !force) return;
+
+  stopDemoVoice();
+  demoVoiceAudio = demoVoiceAudio || new Audio();
+  demoVoiceAudio.src = src;
+  demoVoiceAudio.currentTime = 0;
+  demoVoiceAudio.onended = () => setVoicePlaying(false);
+  demoVoiceAudio.onerror = () => setVoicePlaying(false);
+  setVoicePlaying(true);
+  demoVoiceAudio.play().catch(() => setVoicePlaying(false));
+}
+
 /* ---------- embed preparation ---------- */
 function stripChrome(key) {
   let d;
@@ -76,6 +135,7 @@ function prep(key) {
   stripChrome(key);
   try {
     const w = frames[key].contentWindow;
+    w.__dosetteDemoSuppressSpeech = true;
     if (typeof w.switchRole === 'function') w.switchRole(ROLE_OF[key]);
     const d = frames[key].contentDocument;
     if (d && d.documentElement) d.documentElement.scrollTop = 0;
@@ -131,7 +191,10 @@ function inWin(key, fn) {
   try {
     const w = frames[key].contentWindow;
     const d = frames[key].contentDocument;
-    if (w && d) fn(w, d);
+    if (w && d) {
+      w.__dosetteDemoSuppressSpeech = true;
+      fn(w, d);
+    }
   } catch (e) { console.warn('[demo] embed call failed:', e); }
 }
 
@@ -202,6 +265,7 @@ const WT = {
     steps: [
       {
         kicker: 'DISPENSE · 1', head: 'Dose time — the unit dispenses',
+        voice: 'dispense_0',
         note: 'At 19:00 the compartment opens on its own — no confirmation, no lock. The unit shows the dose with two buttons: ℹ for a plain-language explanation, and ☎ to call the caregiver.',
         run() {
           applyTime('19:00');
@@ -215,6 +279,7 @@ const WT = {
       },
       {
         kicker: 'DISPENSE · 2', head: 'Camera: one tablet left over — unit warns',
+        voice: 'dispense_1',
         note: 'John took all but one. The built-in camera spots the leftover tablet and the unit display warns him to take the last one.',
         run() {
           inWin('device', (w) => {
@@ -226,6 +291,7 @@ const WT = {
       },
       {
         kicker: 'DISPENSE · 3', head: 'Camera: cup empty — all clear',
+        voice: 'dispense_2',
         note: 'The camera confirms the cup is empty. The dose is logged as taken on time and a green confirmation lands in Sophie’s Care Inbox.',
         run() {
           inWin('device', (w) => {
@@ -254,6 +320,7 @@ const WT = {
     steps: [
       {
         kicker: 'MISSED · 1', head: 'The evening dose is due',
+        voice: 'missed_0',
         note: 'It is 19:00. The unit shows the dose and John’s phone prompts him — but he does not take it.',
         run() {
           applyTime('19:00');
@@ -265,6 +332,7 @@ const WT = {
       },
       {
         kicker: 'MISSED · 2', head: '10 minutes late — gentle reminder',
+        voice: 'missed_1',
         note: 'At 19:10 John’s phone sends a calm reminder. No alarm yet, no message to Sophie.',
         run() {
           applyTime('19:10');
@@ -289,6 +357,7 @@ const WT = {
       },
       {
         kicker: 'MISSED · 4', head: 'John takes it late',
+        voice: 'missed_3',
         note: 'John finally opens the compartment. The alert clears and the intake is logged as late.',
         run() {
           inWin('patient', (w) => {
@@ -326,6 +395,7 @@ function markTime(t) {
 function setTime(t) {
   applyTime(t);
   nudge();
+  clearDemoVoice();
 }
 
 /* which of the 4 "today" slots is dispensing next, from the demo clock */
@@ -376,6 +446,11 @@ function runStep(i) {
   cancelNudges();           // drop any pending refresh from the previous step
   setNarr(step.kicker, step.head, step.note);
   step.run();
+  if (step.voice) {
+    playDemoVoice(step.voice);
+  } else {
+    clearDemoVoice();
+  }
   renderSteps();
 }
 
@@ -383,6 +458,7 @@ function setWalkthrough(key) {
   if (!WT[key]) return;
   activeWt = key;
   reached = -1;
+  clearDemoVoice();
   // leaving a walkthrough: renderDeviceWheel() clears any full-screen takeover
   // (med-info / cup-camera) the unit was stuck on and redraws the normal screen
   inWin('device', (w) => {
@@ -394,6 +470,7 @@ function setWalkthrough(key) {
 }
 
 async function resetDemo() {
+  stopDemoVoice();
   try { await fetch('/api/reset', { method: 'POST' }); } catch (e) { /* noop */ }
   Object.keys(frames).forEach((key) => {
     try { frames[key].contentWindow.location.reload(); }
@@ -510,6 +587,14 @@ el('btn-lock-caregiver')?.addEventListener('click', () => togglePhoneLock('careg
 el('btn-ctl-lock-patient')?.addEventListener('click', () => togglePhoneLock('patient'));
 el('btn-ctl-lock-cg')?.addEventListener('click', () => togglePhoneLock('caregiver'));
 el('btn-ctl-unlock-all')?.addEventListener('click', unlockAllPhones);
+el('btn-demo-voice-toggle')?.addEventListener('click', () => {
+  demoVoiceEnabled = !demoVoiceEnabled;
+  if (!demoVoiceEnabled) stopDemoVoice();
+  updateVoiceControls();
+});
+el('btn-demo-voice-replay')?.addEventListener('click', () => {
+  if (currentVoiceKey) playDemoVoice(currentVoiceKey, { force: true });
+});
 
 window.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'phone-lock-changed') {
@@ -535,5 +620,5 @@ document.addEventListener('keydown', (e) => {
 
 setWalkthrough('load');
 updateLockUi();
+updateVoiceControls();
 markTime('15:00');   /* embeds boot at 15:00 (afternoon — unit idle, nothing due) */
-
