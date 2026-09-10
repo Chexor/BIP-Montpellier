@@ -158,6 +158,22 @@ const dom = {
   btnSendMessageToPatient: document.getElementById('btn-send-message-to-patient'),
   caregiverInboxList: document.getElementById('caregiver-inbox-list'),
 
+  // Caregiver Scanner & AI Explanation
+  btnCgScanDafalgan: document.getElementById('btn-cg-scan-dafalgan'),
+  btnCgScanLipitor: document.getElementById('btn-cg-scan-lipitor'),
+  inputCgBarcode: document.getElementById('input-cg-barcode'),
+  btnCgCustomScan: document.getElementById('btn-cg-custom-scan'),
+  cgScanResult: document.getElementById('cg-scan-result'),
+  cgScanDot: document.getElementById('cg-scan-dot'),
+  cgScanName: document.getElementById('cg-scan-name'),
+  cgScanGeneric: document.getElementById('cg-scan-generic'),
+  cgScanSummary: document.getElementById('cg-scan-summary'),
+  cgScanInstructions: document.getElementById('cg-scan-instructions'),
+  cgScanWarnings: document.getElementById('cg-scan-warnings'),
+  cgScanAssign: document.getElementById('cg-scan-assign'),
+  btnCgScanLoad: document.getElementById('btn-cg-scan-load'),
+  btnCgScanSpeak: document.getElementById('btn-cg-scan-speak'),
+
   // Terminal modal & toast container
   btnOpenTerminalHint: document.getElementById('btn-open-terminal-hint'),
   terminalModal: document.getElementById('terminal-modal'),
@@ -968,7 +984,7 @@ function renderDeviceWheel() {
     `;
     const infoButton = dom.deviceDoseScreen.querySelector('.device-dose-info');
     const callButton = dom.deviceDoseScreen.querySelector('.device-call-hold');
-    infoButton.addEventListener('click', () => showToast(`${medicationName}: ${medicationDetails}`, 'info'));
+    infoButton.addEventListener('click', () => showDeviceMedInfo(medication, medicationName));
     let holdTimer;
     const clearHold = () => {
       window.clearTimeout(holdTimer);
@@ -1020,6 +1036,36 @@ function renderDeviceWheel() {
       renderDeviceWheel();
     }, 10000);
   };
+}
+
+// Orange "i" button on the dispenser display: speak a plain-language explanation
+// and show it in large, high-contrast text for elderly patients.
+function showDeviceMedInfo(medication, medicationName) {
+  if (!dom.deviceDoseScreen) return;
+
+  const summary = medication?.ai_explanation?.summary || 'This is your scheduled medication.';
+  const howTo = medication?.ai_explanation?.simple_instructions || 'Take it the way your caregiver has set up your schedule.';
+  const spoken = `This is ${medicationName}. ${summary} How to take it: ${howTo}`;
+
+  speakText(spoken);
+
+  dom.deviceDoseScreen.innerHTML = `
+    <div class="device-info-panel">
+      <span class="device-info-kicker">WHAT IS THIS MEDICINE?</span>
+      <strong class="device-info-name">${medicationName}</strong>
+      <p class="device-info-summary">${summary}</p>
+      <p class="device-info-howto"><b>How to take it:</b> ${howTo}</p>
+      <div class="device-info-actions">
+        <button class="device-info-btn device-info-again" type="button">🔊 Read again</button>
+        <button class="device-info-btn device-info-back" type="button">← Back</button>
+      </div>
+    </div>
+  `;
+
+  dom.deviceDoseScreen.querySelector('.device-info-again')
+    .addEventListener('click', () => speakText(spoken));
+  dom.deviceDoseScreen.querySelector('.device-info-back')
+    .addEventListener('click', () => renderDeviceWheel());
 }
 
 function renderHardwareStatus() {
@@ -1414,6 +1460,61 @@ function displayMedicationExplanation(med) {
   }
 }
 
+// Caregiver-side scanner: look up a barcode and show the plain-language card
+// used to confirm a medicine before loading it into a compartment.
+async function scanForCaregiver(barcode) {
+  if (!barcode) return;
+  try {
+    const res = await fetch(apiUrl('/api/scan'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ barcode: String(barcode).trim() }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'Barcode not recognized', 'alert');
+      return;
+    }
+    const data = await res.json();
+    displayCaregiverScan(data.medication, data.assigned_compartment);
+    showToast(`✅ ${data.medication.brand_name} recognized`, 'success');
+  } catch (err) {
+    console.error('Caregiver scan error:', err);
+    showToast('Error during medication scan', 'alert');
+  }
+}
+
+function displayCaregiverScan(med, assignedComp) {
+  if (!med || !dom.cgScanResult) return;
+  state.currentCgScan = med;
+
+  dom.cgScanName.textContent = med.brand_name;
+  dom.cgScanGeneric.textContent = `${med.generic_name} • ${med.dosage} (${med.color}, ${med.shape})`;
+  if (dom.cgScanDot) {
+    dom.cgScanDot.style.background = med.color === 'white' ? '#ffffff' : (med.color === 'yellow' ? '#fde047' : '#f43f5e');
+  }
+  dom.cgScanSummary.textContent = `"${med.ai_explanation.summary}"`;
+  dom.cgScanInstructions.textContent = med.ai_explanation.simple_instructions;
+  dom.cgScanWarnings.textContent = med.ai_explanation.warnings;
+
+  const comp = assignedComp
+    || (state.pillbox && state.pillbox.compartments
+      ? state.pillbox.compartments.find((c) => c.medication_id === med.id)
+      : null);
+  const targetIndex = comp ? comp.compartment_index : 2;
+
+  dom.cgScanAssign.innerHTML = comp
+    ? `Belongs in <strong>Compartment ${comp.compartment_index} (${comp.label})</strong>.`
+    : `No fixed compartment assigned — load into an empty one.`;
+
+  if (dom.btnCgScanLoad) {
+    dom.btnCgScanLoad.textContent = `Load into Compartment ${targetIndex}`;
+    dom.btnCgScanLoad.onclick = () => fillCompartmentAction(targetIndex, med.id);
+  }
+
+  dom.cgScanResult.classList.remove('hidden');
+}
+
 // ===================================================================
 // TEXT-TO-SPEECH (SPEECH SYNTHESIS - ENGLISH)
 // ===================================================================
@@ -1791,6 +1892,23 @@ function setupEventListeners() {
   dom.btnCliOpen1.addEventListener('click', () => openCompartmentAction(1));
   dom.btnCliOpen3.addEventListener('click', () => openCompartmentAction(3));
   dom.btnCliTriggerAlert.addEventListener('click', () => triggerAlertAction(3));
+
+  // Caregiver Scanner
+  if (dom.btnCgScanDafalgan) dom.btnCgScanDafalgan.addEventListener('click', () => scanForCaregiver('3400930000001'));
+  if (dom.btnCgScanLipitor) dom.btnCgScanLipitor.addEventListener('click', () => scanForCaregiver('3400930000002'));
+  if (dom.btnCgCustomScan) dom.btnCgCustomScan.addEventListener('click', () => scanForCaregiver(dom.inputCgBarcode ? dom.inputCgBarcode.value : ''));
+  if (dom.inputCgBarcode) {
+    dom.inputCgBarcode.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') scanForCaregiver(dom.inputCgBarcode.value);
+    });
+  }
+  if (dom.btnCgScanSpeak) {
+    dom.btnCgScanSpeak.addEventListener('click', () => {
+      const med = state.currentCgScan;
+      if (!med) return;
+      speakText(`This is ${med.brand_name}. ${med.ai_explanation.summary} How to take it: ${med.ai_explanation.simple_instructions} Important warning: ${med.ai_explanation.warnings}`);
+    });
+  }
 
   // Caregiver Alert Banner Actions
   dom.btnCallPatient.addEventListener('click', () => {
