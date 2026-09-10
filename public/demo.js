@@ -31,13 +31,32 @@ function stripChrome(key) {
       '.toast-container{display:none!important}' +
       '.smartphone-frame{max-width:none!important;position:relative!important}' +
       'body{overflow-x:hidden}' +
+      /* device: compact the screen so it fits its panel with no scroll */
+      'body.role-device .device-screen-view{min-height:0!important;padding:.7rem .8rem 1rem!important;gap:.4rem!important}' +
+      'body.role-device .device-wheel,body.role-device .device-dose-screen{width:min(66%,14rem)!important}' +
+      'body.role-device .device-screen-heading h2{font-size:1.1rem!important}' +
+      'body.role-device .device-screen-heading p{font-size:.72rem!important}' +
+      'body.role-device .device-screen-legend{font-size:.62rem!important;gap:.45rem!important}' +
+      'body.role-device .device-dose-top{padding:.4rem!important}' +
+      'body.role-device .device-dose-top strong{font-size:1rem!important}' +
+      'body.role-device .device-dose-label{font-size:.58rem!important}' +
+      'body.role-device .device-dose-top span:last-child{font-size:.64rem!important}' +
+      'body.role-device .device-simple{padding:15% 19%!important;gap:.22rem!important}' +
+      'body.role-device .ds-title{font-size:.95rem!important}' +
+      'body.role-device .ds-line{font-size:.64rem!important;line-height:1.2!important}' +
+      'body.role-device .ds-kicker{font-size:.5rem!important}' +
+      'body.role-device .ds-btn{font-size:.62rem!important;padding:.3rem .7rem!important}' +
+      'body.role-device .ds-cup{max-width:2.9rem!important}' +
+      'body.role-device .ds-actions{gap:.3rem!important}' +
       /* John's phone is ultra-simplistic: NO bottom menus or tabs */
       'body.role-patient .mobile-bottom-nav{display:none!important}' +
       'body.role-patient #nav-patient-tabs{display:none!important}' +
       'body.role-patient .phone-content-area{padding-bottom:2rem!important}' +
       /* Caregiver retains full clinical tabs */
       'body.role-caregiver .mobile-bottom-nav{display:block!important;position:sticky!important;bottom:0!important;z-index:90}' +
-      'body.role-caregiver .phone-content-area{padding-bottom:5rem!important}' +
+      'body.role-caregiver .phone-content-area{padding-bottom:5rem!important;padding-left:.75rem!important;padding-right:.75rem!important;overflow-x:hidden!important}' +
+      'body.role-caregiver .tab-page,body.role-caregiver .card,body.role-caregiver .cg-welcome-card{max-width:100%!important;overflow-x:hidden!important}' +
+      'body.role-caregiver .cg-header-patient-chip,body.role-caregiver .compartments-container{flex-wrap:wrap!important}' +
       /* Full lockscreen display in demo console embed */
       '#phone-lockscreen:not(.hidden){display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:100%!important;z-index:99999!important;border-radius:0!important;overflow-y:auto!important;opacity:1!important;transform:none!important;pointer-events:auto!important}';
     d.head.appendChild(st);
@@ -57,9 +76,15 @@ function prep(key) {
 }
 
 /* schedule a couple of refreshes so the POST has time to land server-side */
+let _nudgeTimers = [];
+function cancelNudges() {
+  _nudgeTimers.forEach((id) => window.clearTimeout(id));
+  _nudgeTimers = [];
+}
 function nudge() {
-  setTimeout(refreshAll, 300);
-  setTimeout(refreshAll, 1100);
+  cancelNudges();
+  _nudgeTimers.push(window.setTimeout(refreshAll, 300));
+  _nudgeTimers.push(window.setTimeout(refreshAll, 1100));
 }
 
 /* pull fresh shared state into every embed and re-render */
@@ -114,166 +139,241 @@ function setNarr(kicker, head, note) {
   el('b-note').textContent = note;
 }
 
-/* ---------- scripted steps ---------- */
-const STEPS = [
-  {
-    kicker: 'STEP 1', head: 'John scans his medication box',
-    note: 'In the patient app Dosette recognises the Lipitor 20 mg package from its barcode — no typing, no leaflet.',
-    run() {
-      inWin('patient', (w, d) => {
-        w.switchRole('PATIENT');
-        w.activateTab('tab-patient-scan');
-        const b = d.getElementById('btn-scan-lipitor');
-        if (b) b.click();
-      });
-      focus('patient');
-    },
-  },
-  {
-    kicker: 'STEP 2', head: 'Dosette explains it in one plain sentence',
-    note: '“Lipitor lowers your cholesterol. Take 1 tablet every evening with water.” — large text, and it can be read aloud.',
-    run() {
-      inWin('patient', (w, d) => {
-        w.activateTab('tab-patient-scan');
-        const c = d.getElementById('ai-result-card');
-        if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      });
-      focus('patient');
-    },
-  },
-  {
-    kicker: 'STEP 3', head: 'Sophie loads Compartment 3',
-    note: 'The caregiver app shows which compartment to fill. Sophie loads the evening Lipitor dose into Compartment 3.',
-    run() {
-      inWin('caregiver', (w) => {
-        w.switchRole('CAREGIVER');
-        w.activateTab('tab-cg-pillbox');
-        if (typeof w.fillCompartmentAction === 'function') w.fillCompartmentAction(3, 'med_002');
-      });
-      nudge();
-      focus('caregiver');
-    },
-  },
-  {
-    kicker: 'STEP 4', head: '19:00 — the evening dose is due',
-    note: 'All three views move to 19:00. The unit and John’s phone show the dose is waiting in Compartment 3.',
-    run() {
-      ['patient', 'caregiver', 'device'].forEach((r) =>
-        inWin(r, (w) => { if (typeof w.setSimulatedTime === 'function') w.setSimulatedTime('19:00', false); }));
-      markTime('19:00');
-      inWin('device', (w) => w.switchRole('DEVICE'));
-      inWin('patient', (w) => { w.switchRole('PATIENT'); w.activateTab('tab-patient-today'); });
-      nudge();
-      focus('device');
-    },
-  },
-  {
-    kicker: 'STEP 5', head: 'John opens Compartment 3 and takes his dose',
-    note: 'The sensor logs the intake. Watch Sophie’s Care Inbox — a green “taken on time” confirmation arrives in real time through the shared server.',
-    run() {
-      inWin('patient', (w) => {
-        w.switchRole('PATIENT');
-        w.activateTab('tab-patient-today');
-        if (typeof w.openCompartmentAction === 'function') w.openCompartmentAction(3);
-      });
-      inWin('caregiver', (w) => { w.switchRole('CAREGIVER'); w.activateTab('tab-cg-inbox'); });
-      nudge();
-      focus('caregiver');
-    },
-  },
-  {
-    kicker: 'STEP 6', head: 'Sophie sees John is on schedule',
-    note: 'The Care Inbox confirms the evening dose was taken on time, and adherence stays at 94%. No alert was raised.',
-    run() {
-      inWin('caregiver', (w) => { w.switchRole('CAREGIVER'); w.activateTab('tab-cg-inbox'); });
-      nudge();
-      focus('caregiver');
-    },
-  },
-];
+/* ---------- 3 scripted walkthroughs ---------- */
+let demoTime = '08:00';                 // last simulated time the demo applied
+let scannedMedId = null;                // med the caregiver last scanned in the loader flow
 
-let reached = -1; // highest step index run
+const WT = {
+  load: {
+    title: 'Caregiver scans & loads a medicine',
+    steps: [
+      {
+        kicker: 'LOAD · 1', head: 'Sophie scans the medicine box',
+        note: 'In the caregiver app the camera reads the barcode and confirms the medicine before it is loaded.',
+        run() {
+          scannedMedId = 'med_002';
+          inWin('caregiver', (w, d) => {
+            w.switchRole('CAREGIVER');
+            w.activateTab('tab-cg-scan');
+            const b = d.getElementById('btn-cg-scan-lipitor');
+            if (b) b.click();
+          });
+          focus('caregiver');
+        },
+      },
+      {
+        kicker: 'LOAD · 2', head: 'Pick a compartment on the weekly wheel',
+        note: 'In Sophie’s app, the 28-slot wheel mirrors the unit display — the slot at the bottom opening dispenses next. She taps a slot (or a time of day) and loads the scanned medicine into it.',
+        run() {
+          inWin('caregiver', (w, d) => {
+            w.switchRole('CAREGIVER');
+            w.activateTab('tab-cg-scan');
+            const box = d.getElementById('sync-guidance-box');
+            if (box) box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          });
+          nudge();
+          focus('caregiver');
+        },
+      },
+      {
+        kicker: 'LOAD · 3', head: 'Loaded — the slot is armed for its time',
+        note: 'The compartment now holds the medicine and will unlock at its scheduled time. Sophie can see it in the pillbox view.',
+        run() {
+          inWin('caregiver', (w) => { w.switchRole('CAREGIVER'); w.activateTab('tab-cg-pillbox'); });
+          nudge();
+          focus('caregiver');
+        },
+      },
+    ],
+  },
 
-/* highlight one of the "Other states" buttons ('idle' | 'missed' | null) */
-function setOtherCurrent(which) {
-  el('grp-fallback').querySelectorAll('.c-btn').forEach((b) => {
-    const key = b.dataset.state === 'idle' ? 'idle' : 'missed';
-    b.classList.toggle('is-current', key === which);
-  });
+  dispense: {
+    title: 'Dispensing & the cup camera check',
+    steps: [
+      {
+        kicker: 'DISPENSE · 1', head: 'Dose time — the unit dispenses',
+        note: 'At 19:00 the compartment opens on its own — no confirmation, no lock. The unit shows the dose with two buttons: ℹ for a plain-language explanation, and ☎ to call the caregiver.',
+        run() {
+          applyTime('19:00');
+          inWin('device', (w) => {
+            w.switchRole('DEVICE');
+            if (typeof w.showDeviceCup === 'function') w.showDeviceCup('dispensed');
+          });
+          inWin('patient', (w) => { w.switchRole('PATIENT'); w.activateTab('tab-patient-today'); });
+          focus('device');
+        },
+      },
+      {
+        kicker: 'DISPENSE · 2', head: 'Camera: one tablet left over — unit warns',
+        note: 'John took all but one. The built-in camera spots the leftover tablet and the unit display warns him to take the last one.',
+        run() {
+          inWin('device', (w) => {
+            w.switchRole('DEVICE');
+            if (typeof w.showDeviceCup === 'function') w.showDeviceCup('one-left');
+          });
+          focus('device');
+        },
+      },
+      {
+        kicker: 'DISPENSE · 3', head: 'Camera: cup empty — all clear',
+        note: 'The camera confirms the cup is empty. The dose is logged as taken on time and a green confirmation lands in Sophie’s Care Inbox.',
+        run() {
+          inWin('device', (w) => {
+            w.switchRole('DEVICE');
+            if (typeof w.showDeviceCup === 'function') w.showDeviceCup('all-clear');
+          });
+          inWin('patient', (w) => {
+            w.switchRole('PATIENT');
+            w.activateTab('tab-patient-today');
+            if (typeof w.openCompartmentAction === 'function') w.openCompartmentAction(3);
+          });
+          inWin('caregiver', (w) => { w.switchRole('CAREGIVER'); w.activateTab('tab-cg-inbox'); });
+          nudge();
+          focus('device');
+          // re-assert the all-clear cup after the refresh settles
+          setTimeout(() => inWin('device', (w) => {
+            if (typeof w.showDeviceCup === 'function') w.showDeviceCup('all-clear');
+          }), 1400);
+        },
+      },
+    ],
+  },
+
+  missed: {
+    title: 'A missed medication',
+    steps: [
+      {
+        kicker: 'MISSED · 1', head: 'The evening dose is due',
+        note: 'It is 19:00. The unit shows the dose and John’s phone prompts him — but he does not take it.',
+        run() {
+          applyTime('19:00');
+          inWin('device', (w) => w.switchRole('DEVICE'));
+          inWin('patient', (w) => { w.switchRole('PATIENT'); w.activateTab('tab-patient-today'); });
+          nudge();
+          focus('patient');
+        },
+      },
+      {
+        kicker: 'MISSED · 2', head: '10 minutes late — gentle reminder',
+        note: 'At 19:10 John’s phone sends a calm reminder. No alarm yet, no message to Sophie.',
+        run() {
+          applyTime('19:10');
+          inWin('patient', (w) => { w.switchRole('PATIENT'); w.activateTab('tab-patient-today'); });
+          nudge();
+          focus('patient');
+        },
+      },
+      {
+        kicker: 'MISSED · 3', head: '35 minutes late — Sophie is alerted',
+        note: 'At 19:35 the unit LED blinks red and the caregiver app raises an alarm banner with a one-tap call to John.',
+        run() {
+          applyTime('19:35');
+          inWin('caregiver', (w) => {
+            w.switchRole('CAREGIVER');
+            if (typeof w.triggerAlertAction === 'function') w.triggerAlertAction(3, false);
+            w.activateTab('tab-cg-timeline');
+          });
+          nudge();
+          focus('caregiver');
+        },
+      },
+      {
+        kicker: 'MISSED · 4', head: 'John takes it late',
+        note: 'John finally opens the compartment. The alert clears and the intake is logged as late.',
+        run() {
+          inWin('patient', (w) => {
+            w.switchRole('PATIENT');
+            w.activateTab('tab-patient-today');
+            if (typeof w.openCompartmentAction === 'function') w.openCompartmentAction(3);
+          });
+          inWin('caregiver', (w) => { w.switchRole('CAREGIVER'); w.activateTab('tab-cg-timeline'); });
+          nudge();
+          focus('caregiver');
+        },
+      },
+    ],
+  },
+};
+
+let activeWt = 'load';
+let reached = -1;
+
+function applyTime(t) {
+  demoTime = t;
+  ['patient', 'caregiver', 'device'].forEach((r) =>
+    inWin(r, (w) => { if (typeof w.setSimulatedTime === 'function') w.setSimulatedTime(t, t === '19:35'); }));
+  markTime(t);
 }
 
-/* highlight the active "Simulation time" button (or null to clear) */
+/* highlight the active "Simulation time" button */
 function markTime(t) {
   el('grp-time').querySelectorAll('[data-time]').forEach((b) => {
     b.classList.toggle('is-current', b.dataset.time === t);
   });
 }
 
-/* set the simulated clock across all three embeds */
+/* manual "Simulation time" control */
 function setTime(t) {
-  const announce = t === '19:35';
-  ['patient', 'caregiver', 'device'].forEach((r) =>
-    inWin(r, (w) => { if (typeof w.setSimulatedTime === 'function') w.setSimulatedTime(t, announce); }));
-  markTime(t);
+  applyTime(t);
   nudge();
 }
 
-function renderProgress() {
-  const wrap = el('b-progress');
-  wrap.innerHTML = '';
-  for (let i = 0; i < STEPS.length; i += 1) {
-    const b = document.createElement('i');
-    if (i < reached) b.className = 'done';
-    if (i === reached) b.className = 'current';
-    wrap.appendChild(b);
-  }
-  el('grp-flow').querySelectorAll('[data-step]').forEach((btn) => {
-    const i = Number(btn.dataset.step);
+/* which of the 4 "today" slots is dispensing next, from the demo clock */
+function activeSlotForClock() {
+  if (demoTime === '08:00') return 1;
+  if (demoTime === '12:30') return 2;
+  if (demoTime === '22:00') return 4;
+  return 3;
+}
+
+/* ---------- walkthrough rendering ---------- */
+function renderSteps() {
+  const wt = WT[activeWt];
+  el('wt-title').textContent = wt.title;
+
+  const grid = el('wt-steps');
+  grid.innerHTML = '';
+  wt.steps.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'c-btn';
+    btn.dataset.step = String(i);
+    btn.textContent = `${i + 1} · ${s.head}`;
     btn.classList.toggle('is-done', i < reached);
     btn.classList.toggle('is-current', i === reached);
+    grid.appendChild(btn);
+  });
+
+  const prog = el('b-progress');
+  prog.innerHTML = '';
+  for (let i = 0; i < wt.steps.length; i += 1) {
+    const dot = document.createElement('i');
+    if (i < reached) dot.className = 'done';
+    if (i === reached) dot.className = 'current';
+    prog.appendChild(dot);
+  }
+
+  el('wt-tabs').querySelectorAll('.wt-tab').forEach((b) => {
+    b.classList.toggle('is-active', b.dataset.wt === activeWt);
   });
 }
 
 function runStep(i) {
-  const step = STEPS[i];
+  const step = WT[activeWt].steps[i];
   if (!step) return;
   reached = Math.max(reached, i);
-  setOtherCurrent(null);
+  cancelNudges();           // drop any pending refresh from the previous step
   setNarr(step.kicker, step.head, step.note);
   step.run();
-  renderProgress();
+  renderSteps();
 }
 
-function runIdle() {
-  setNarr('IDLE', 'No dose due right now',
-    'It is 12:30 — nothing is scheduled until this evening. The unit shows its idle dial, John’s phone says “all caught up”, and Sophie’s app stays quiet.');
-  ['patient', 'caregiver', 'device'].forEach((r) =>
-    inWin(r, (w) => { if (typeof w.setSimulatedTime === 'function') w.setSimulatedTime('12:30', false); }));
-  markTime('12:30');
-  inWin('patient', (w) => { w.switchRole('PATIENT'); w.activateTab('tab-patient-today'); });
-  inWin('device', (w) => w.switchRole('DEVICE'));
-  inWin('caregiver', (w) => { w.switchRole('CAREGIVER'); w.activateTab('tab-cg-timeline'); });
-  nudge();
+function setWalkthrough(key) {
+  if (!WT[key]) return;
+  activeWt = key;
   reached = -1;
-  setOtherCurrent('idle');
-  renderProgress();
-  focus('device');
-}
-
-function runFallback() {
-  setNarr('FALLBACK', 'Missed dose — Sophie is alerted',
-    'The dose is now more than 30 minutes late. The unit LED blinks red and the caregiver app raises an alarm banner with a one-tap call to John.');
-  ['patient', 'caregiver', 'device'].forEach((r) =>
-    inWin(r, (w) => { if (typeof w.setSimulatedTime === 'function') w.setSimulatedTime('19:35', true); }));
-  markTime('19:35');
-  inWin('caregiver', (w) => {
-    w.switchRole('CAREGIVER');
-    if (typeof w.triggerAlertAction === 'function') w.triggerAlertAction(3, false);
-    w.activateTab('tab-cg-timeline');
-  });
-  nudge();
-  focus('caregiver');
-  setOtherCurrent('missed');
+  const wt = WT[key];
+  setNarr('WALKTHROUGH', wt.title, 'Click the steps in order — each drives the real patient, caregiver and device apps on the right.');
+  renderSteps();
 }
 
 async function resetDemo() {
@@ -283,12 +383,11 @@ async function resetDemo() {
     catch (e) { frames[key].src = 'index.html'; }
   });
   reached = -1;
-  setNarr('READY', 'Dosette live demonstration',
-    'Use the walkthrough controls below. Each step drives the real patient, caregiver and device apps shown on the right.');
-  setOtherCurrent(null);
-  markTime('19:00');
+  scannedMedId = null;
+  demoTime = '08:00';
+  markTime('08:00');
+  setWalkthrough(activeWt);
   ['a', 'd', 'e'].forEach((p) => document.querySelector('.panel-' + p).classList.remove('is-focus'));
-  renderProgress();
   updateLockUi();
 }
 
@@ -368,13 +467,13 @@ function unlockAllPhones() {
 }
 
 /* ---------- wiring ---------- */
-el('grp-flow').addEventListener('click', (e) => {
+el('wt-tabs').addEventListener('click', (e) => {
+  const t = e.target.closest('.wt-tab');
+  if (t) setWalkthrough(t.dataset.wt);
+});
+el('wt-steps').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-step]');
   if (btn) runStep(Number(btn.dataset.step));
-});
-el('grp-fallback').addEventListener('click', (e) => {
-  if (e.target.closest('[data-state="idle"]')) { runIdle(); return; }
-  if (e.target.closest('[data-fallback]')) runFallback();
 });
 el('grp-time').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-time]');
@@ -414,9 +513,10 @@ document.addEventListener('keydown', (e) => {
   if (e.key !== 'ArrowRight' && e.key !== ' ') return;
   if (document.activeElement && /^(INPUT|BUTTON|TEXTAREA)$/.test(document.activeElement.tagName)) return;
   e.preventDefault();
-  runStep(Math.min(reached + 1, STEPS.length - 1));
+  runStep(Math.min(reached + 1, WT[activeWt].steps.length - 1));
 });
 
-renderProgress();
+setWalkthrough('load');
 updateLockUi();
+markTime('08:00');   /* embeds boot at 08:00 (Morning) */
 

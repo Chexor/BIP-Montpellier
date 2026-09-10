@@ -34,7 +34,7 @@
         </div>
         <div>
           <h1 class="brand-title">Dosette <span class="badge-pill">Smart Pillbox</span></h1>
-          <p class="brand-subtitle" id="header-persona-subtitle">Logged in as: <strong>Jean Dupont (Patient)</strong>
+          <p class="brand-subtitle" id="header-persona-subtitle">Logged in as: <strong>John Dupont (Patient)</strong>
           </p>
         </div>
       </div>
@@ -46,8 +46,8 @@
           <span class="switcher-label">Role:</span>
           <div class="role-toggle-group">
             <button id="btn-role-patient" class="role-btn active"
-              title="View app as patient Jean (simplistic, calming daylight theme)">
-              👴 Jean (Patient)
+              title="View app as patient John (simplistic, calming daylight theme)">
+              👴 John (Patient)
             </button>
             <button id="btn-role-caregiver" class="role-btn"
               title="View app as caregiver Sophie (monitoring dashboard & refill controls)">
@@ -91,16 +91,16 @@
         <div class="ts-label-group">
           <span class="ts-clock-icon">⏰</span>
           <span class="ts-title">TIME SIMULATOR:</span>
-          <span class="ts-current-time" id="simulated-time-display">19:00</span>
+          <span class="ts-current-time" id="simulated-time-display">08:00</span>
         </div>
         <div class="ts-buttons-row">
-          <button class="ts-btn" data-time="08:00" id="btn-ts-0800" title="Morning Dose Time (Dafalgan Due)">
+          <button class="ts-btn active-time" data-time="08:00" id="btn-ts-0800" title="Morning Dose Time (Dafalgan Due)">
             ☀️ 08:00 (Morning)
           </button>
           <button class="ts-btn" data-time="12:30" id="btn-ts-1230" title="Lunch Time (Empty/No Meds)">
             🌤️ 12:30 (Lunch)
           </button>
-          <button class="ts-btn active-time" data-time="19:00" id="btn-ts-1900" title="Evening Dose Time (Lipitor Due)">
+          <button class="ts-btn" data-time="19:00" id="btn-ts-1900" title="Evening Dose Time (Lipitor Due)">
             🌙 19:00 (Evening)
           </button>
           <button class="ts-btn" data-time="19:10" id="btn-ts-1910"
@@ -134,7 +134,7 @@
 
       <!-- Phone Status Bar -->
       <div class="phone-status-bar">
-        <span class="status-time" id="phone-clock">19:00</span>
+        <span class="status-time" id="phone-clock">08:00</span>
         <div class="status-icons">
           <span class="status-icon">📶 5G</span>
           <span class="status-icon">BT 🔵</span>
@@ -147,9 +147,9 @@
            =================================================================== -->
       <div id="phone-lockscreen" class="phone-lockscreen hidden">
         <div class="lockscreen-header">
-          <div class="lockscreen-owner-badge" id="lockscreen-owner-badge">Jean's Phone 👴</div>
+          <div class="lockscreen-owner-badge" id="lockscreen-owner-badge">John's Phone 👴</div>
           <div class="lockscreen-padlock">🔒</div>
-          <div class="lockscreen-clock" id="lockscreen-clock">19:00</div>
+          <div class="lockscreen-clock" id="lockscreen-clock">08:00</div>
           <div class="lockscreen-date" id="lockscreen-date">Tuesday, September 8</div>
         </div>
 
@@ -178,7 +178,7 @@
       <div class="phone-content-area" id="phone-content-area">
 
         <!-- ===================================================================
-             VIEW 1: PATIENT PERSPECTIVE (👴 Jean Dupont)
+             VIEW 1: PATIENT PERSPECTIVE (👴 John Dupont)
              Calming, Simplistic White & Light-Blue Palette
              =================================================================== -->
         <div id="role-view-patient" class="role-view">
@@ -189,7 +189,7 @@
             <div class="next-dose-spotlight" id="patient-next-dose-card">
               <div class="spotlight-header">
                 <span class="spotlight-tag" id="spotlight-status-tag">SCHEDULED DOSE</span>
-                <span class="spotlight-time" id="spotlight-time-text">19:00 (Evening)</span>
+                <span class="spotlight-time" id="spotlight-time-text">08:00 (Morning)</span>
               </div>
               <div class="spotlight-body">
                 <div class="spotlight-icon">💊</div>
@@ -209,7 +209,7 @@
               </button>
             </div>
 
-            <!-- Physical Pillbox Status (Jean can only open the current dose) -->
+            <!-- Physical Pillbox Status (John can only open the current dose) -->
             <div class="card hardware-compact-card patient-dispenser-card">
               <div class="chassis-header-compact">
                 <div>
@@ -232,11 +232,11 @@
               <div class="psn-header">
                 <div class="psn-avatar">👩‍⚕️</div>
                 <div class="psn-meta">
-                  <span class="psn-label">Personal Message from Daughter Sophie</span>
+                  <span class="psn-label">Personal Message from Sophie</span>
                   <span class="psn-time" id="patient-sophie-time">Just now</span>
                 </div>
               </div>
-              <p class="psn-message" id="patient-sophie-text">"Hi Dad! Just checking in. Remember to take your pills with water tonight. Love you! ❤️"</p>
+              <p class="psn-message" id="patient-sophie-text">"Hi John! Just checking in. Remember to take your pills with water tonight. Take care! ❤️"</p>
               <button class="psn-speech-btn" id="btn-patient-read-sophie" title="Read Sophie's message aloud">
                 <span>🔊 Read Message Aloud</span>
               </button>
@@ -249,7 +249,7 @@
                 <button class="pes-call-btn btn-call-sophie-direct" id="btn-patient-direct-sophie">
                   <span class="pes-icon">📞</span>
                   <div class="pes-info">
-                    <span class="pes-name">Call Sophie (Daughter)</span>
+                    <span class="pes-name">Call Sophie (Caregiver)</span>
                     <span class="pes-sub">+32 470 12 34 56 • Available now</span>
                   </div>
                   <span class="pes-arrow">➔</span>
@@ -349,7 +349,7 @@
             </div>
             <div class="page-title-box">
               <h2 class="page-main-heading">My Messages</h2>
-              <p class="page-sub-desc">Messages and reminders from your daughter Sophie.</p>
+              <p class="page-sub-desc">Messages and reminders from your caregiver Sophie.</p>
             </div>
 
             <div class="inbox-container" id="patient-inbox-list">
@@ -373,7 +373,7 @@
               <button class="emergency-contact-btn btn-call-sophie" id="btn-patient-call-sophie">
                 <span class="em-icon">📞</span>
                 <div class="em-text">
-                  <span class="em-name">Call Daughter Sophie</span>
+                  <span class="em-name">Call Sophie</span>
                   <span class="em-phone">+32 470 12 34 56 (Family Caregiver)</span>
                 </div>
               </button>
@@ -420,9 +420,9 @@
                 <h2 class="cg-header-user">Sophie Dupont</h2>
               </div>
             </div>
-            <div class="cg-header-patient-chip" title="Monitoring Jean Dupont">
+            <div class="cg-header-patient-chip" title="Monitoring John Dupont">
               <span class="chip-dot-live"></span>
-              <span>Jean (82) • Live Sync</span>
+              <span>John (82) • Live Sync</span>
             </div>
           </div>
 
@@ -432,7 +432,7 @@
               <div class="cg-patient-badge">
                 <span class="cg-avatar">👴</span>
                 <div>
-                  <h2 class="cg-patient-title">Jean Dupont (82 yrs)</h2>
+                  <h2 class="cg-patient-title">John Dupont (82 yrs)</h2>
                   <span class="cg-patient-meta">Living at Home • Heart &amp; Cholesterol Therapy</span>
                 </div>
               </div>
@@ -450,11 +450,11 @@
               </div>
               <div class="alert-info">
                 <h3 class="alert-title">URGENT: Dose Missed (>30m Delay)!</h3>
-                <p id="alert-message" class="alert-text">Jean has not taken his 19:00 dose of Lipitor 20mg after more
+                <p id="alert-message" class="alert-text">John has not taken his 19:00 dose of Lipitor 20mg after more
                   than 30 minutes delay.</p>
               </div>
               <div class="alert-actions">
-                <button id="btn-call-patient" class="btn-alert-call">📞 Call Jean</button>
+                <button id="btn-call-patient" class="btn-alert-call">📞 Call John</button>
                 <button id="btn-dismiss-alert" class="btn-alert-dismiss">Dismiss</button>
               </div>
             </div>
@@ -473,7 +473,7 @@
           <section id="tab-cg-pillbox" class="tab-page">
             <div class="page-title-box">
               <h2 class="page-main-heading">Pillbox Refill &amp; Hardware Management</h2>
-              <p class="page-sub-desc">As the caregiver, you prepare and load the pills into Jean's smart compartments.
+              <p class="page-sub-desc">As the caregiver, you prepare and load the pills into John's smart compartments.
               </p>
             </div>
 
@@ -527,7 +527,7 @@
                 <span class="cg-summary-icon">📋</span>
                 <div>
                   <h3 class="cg-summary-title">Compartment Status &amp; Refill Schedule</h3>
-                  <p class="cg-summary-desc">Live overview of taken doses, previous contents, and required refills for Jean's pillbox.</p>
+                  <p class="cg-summary-desc">Live overview of taken doses, previous contents, and required refills for John's pillbox.</p>
                 </div>
               </div>
               <div class="cg-summary-table-wrap" id="cg-summary-table-wrap">
@@ -540,7 +540,7 @@
           <section id="tab-cg-scan" class="tab-page">
             <div class="page-title-box">
               <h2 class="page-main-heading">Medicine Scanner &amp; AI Assistant 📷</h2>
-              <p class="page-sub-desc">Scan prescription boxes with your camera or barcode to verify dosage and load pills directly into Jean's smart compartments.</p>
+              <p class="page-sub-desc">Scan prescription boxes with your camera or barcode to verify dosage and load pills directly into John's smart compartments.</p>
             </div>
 
             <!-- Scanner Viewport Card -->
@@ -648,20 +648,38 @@
                 </div>
               </div>
 
-              <!-- Pillbox Compartment Hint & Quick Refill Action -->
+              <!-- Choose a compartment on the weekly wheel, then load -->
               <div id="sync-guidance-box" class="sync-guidance-box">
                 <div class="guidance-content">
-                  <span class="guidance-title">Smart Pillbox Assignment:</span>
-                  <span id="guidance-text" class="guidance-desc">Caregiver assignment: <strong>Compartment 1 (Morning)</strong>.</span>
+                  <span class="guidance-title">Choose a compartment</span>
+                  <span id="guidance-text" class="guidance-desc">Pick a slot on the weekly wheel — the one at the opening (bottom) dispenses next — then load this medicine into it.</span>
                   <span id="cg-scan-assign" style="display:none"></span>
                 </div>
-                <div class="guidance-actions">
-                  <select id="select-target-compartment" class="target-compartment-select" title="Choose compartment to load">
-                    <option value="1">Box #1 (Morning 08:00)</option>
-                    <option value="2">Box #2 (Noon 12:30)</option>
-                    <option value="3">Box #3 (Evening 19:00)</option>
-                  </select>
-                  <button id="btn-quick-fill" class="btn-quick-fill">Load into Box #1 📥</button>
+                <div class="cg-loader">
+                  <div class="cg-loader-wheel" id="cg-loader-wheel">
+                    <div class="cg-loader-slots" id="cg-loader-slots"></div>
+                    <div class="cg-loader-hub">
+                      <span>SLOT</span>
+                      <strong id="cg-loader-hub-num">#1</strong>
+                      <em id="cg-loader-hub-label">Today · Morning</em>
+                    </div>
+                    <div class="cg-loader-opening" aria-hidden="true"></div>
+                  </div>
+                  <div class="cg-loader-periods" id="cg-loader-periods">
+                    <button type="button" class="clp-btn" data-period="1">☀️ Morning · 08:00</button>
+                    <button type="button" class="clp-btn" data-period="2">🌤️ Noon · 12:30</button>
+                    <button type="button" class="clp-btn" data-period="3">🌙 Evening · 19:00</button>
+                    <button type="button" class="clp-btn" data-period="4">🌌 Night · 22:00</button>
+                  </div>
+                  <div class="cg-loader-legend">
+                    <span><i class="sw filled"></i>Loaded</span>
+                    <span><i class="sw empty"></i>Empty</span>
+                    <span><i class="sw active"></i>Dispensing next</span>
+                    <span><i class="sw pick"></i>Selected</span>
+                  </div>
+                  <button type="button" id="btn-cg-loader-load" class="btn-cg-loader-load" disabled>📥 Load into this compartment</button>
+                  <select id="select-target-compartment" class="target-compartment-select" hidden></select>
+                  <button id="btn-quick-fill" hidden></button>
                   <button id="btn-cg-scan-load" style="display:none"></button>
                 </div>
               </div>
@@ -674,20 +692,20 @@
           <section id="tab-cg-inbox" class="tab-page">
             <div class="page-title-box">
               <h2 class="page-main-heading">Caregiver Messages &amp; Alerts</h2>
-              <p class="page-sub-desc">Send reminders directly to Jean's phone or view pillbox notifications.</p>
+              <p class="page-sub-desc">Send reminders directly to John's phone or view pillbox notifications.</p>
             </div>
 
-            <!-- Send Reminder to Jean -->
+            <!-- Send Reminder to John -->
             <div class="card send-message-card">
-              <h3 class="send-title">💬 Send a Reminder to Jean</h3>
-              <p class="send-desc">This notification appears immediately on Jean's lockscreen and can be read aloud.</p>
+              <h3 class="send-title">💬 Send a Reminder to John</h3>
+              <p class="send-desc">This notification appears immediately on John's lockscreen and can be read aloud.</p>
 
               <!-- Quick Presets -->
               <div class="quick-msg-presets">
-                <button class="preset-msg-btn" data-text="Hi Dad, don't forget to take your evening Lipitor with dinner! Love Sophie ❤️">
+                <button class="preset-msg-btn" data-text="Hi John, don't forget to take your evening Lipitor with dinner! From Sophie ❤️">
                   "Don't forget your evening Lipitor! ❤️"
                 </button>
-                <button class="preset-msg-btn" data-text="I saw you took your morning pill on time, great job Dad! 👍">
+                <button class="preset-msg-btn" data-text="I saw you took your morning pill on time, great job John! 👍">
                   "Great job taking your morning pill! 👍"
                 </button>
                 <button class="preset-msg-btn" data-text="I will visit tomorrow around 2 PM with your groceries. See you tomorrow! 🚗">
@@ -696,7 +714,7 @@
               </div>
 
               <div class="custom-msg-input-box">
-                <textarea id="input-cg-message" rows="2" placeholder="Write a personal note for Jean..."></textarea>
+                <textarea id="input-cg-message" rows="2" placeholder="Write a personal note for John..."></textarea>
                 <button id="btn-send-message-to-patient" class="action-btn btn-primary">
                   Send Reminder 🚀
                 </button>
@@ -716,13 +734,13 @@
           <section id="tab-cg-settings" class="tab-page">
             <div class="page-title-box">
               <h2 class="page-main-heading">Patient Profile &amp; Protocol</h2>
-              <p class="page-sub-desc">Medical configuration and escalation settings for Jean Dupont.</p>
+              <p class="page-sub-desc">Medical configuration and escalation settings for John Dupont.</p>
             </div>
 
             <div class="card dossier-card">
               <div class="dossier-row">
                 <span class="dossier-label">Patient:</span>
-                <span class="dossier-value">Jean Dupont (82 yrs, Montpellier)</span>
+                <span class="dossier-value">John Dupont (82 yrs, Montpellier)</span>
               </div>
               <div class="dossier-row">
                 <span class="dossier-label">Primary Caregiver:</span>
@@ -837,7 +855,7 @@
           </div>
           <div class="modal-body">
             <p>Run these commands in your terminal. All events synchronize <strong>live in real-time</strong> with both
-              Jean's and Sophie's screens:</p>
+              John's and Sophie's screens:</p>
             <div class="code-box">
               <div class="code-line"><code>npm run cli scan-pack 3400930000001</code> <span class="code-desc"># Scan
                   Dafalgan 1g barcode</span></div>

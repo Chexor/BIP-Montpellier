@@ -61,25 +61,19 @@
     <!-- ============ PANEL C — walkthrough controls ============ -->
     <section class="panel panel-c" aria-label="Presentation controls">
       <div class="c-head">
-        <div>
+        <div class="wt-tabs" id="wt-tabs">
           <span class="tag">C</span>
-          <span class="c-kicker">Presentation controls</span>
-          <h2 class="c-title">Scripted walkthrough</h2>
+          <button class="wt-tab is-active" data-wt="load">① Load medicine</button>
+          <button class="wt-tab" data-wt="dispense">② Dispense &amp; take</button>
+          <button class="wt-tab" data-wt="missed">③ Missed dose</button>
         </div>
         <button class="btn-reset" id="btn-reset">Reset demo</button>
       </div>
 
       <div class="c-groups">
-        <div class="c-group">
-          <h4 class="c-group-title">Main flow</h4>
-          <div class="c-btn-grid" id="grp-flow">
-            <button class="c-btn" data-step="0">1 · Scan the box</button>
-            <button class="c-btn" data-step="1">2 · AI explains it</button>
-            <button class="c-btn" data-step="2">3 · Sophie loads Compartment 3</button>
-            <button class="c-btn" data-step="3">4 · Evening dose is due (19:00)</button>
-            <button class="c-btn" data-step="4">5 · John takes his dose</button>
-            <button class="c-btn" data-step="5">6 · Sophie sees it on schedule</button>
-          </div>
+        <div class="c-group c-group--steps">
+          <h4 class="c-group-title" id="wt-title">Caregiver loads a medicine</h4>
+          <div class="c-btn-grid c-btn-grid--steps" id="wt-steps"><!-- injected --></div>
         </div>
 
         <div class="c-group">
@@ -94,19 +88,11 @@
         </div>
 
         <div class="c-group">
-          <h4 class="c-group-title">Lockscreen &amp; Notifications</h4>
+          <h4 class="c-group-title">Lockscreen</h4>
           <div class="c-btn-grid c-btn-grid--one" id="grp-lockscreen">
-            <button class="c-btn" id="btn-ctl-lock-patient" data-action="lock-patient">🔒 Lock John's phone (view push notifications)</button>
-            <button class="c-btn" id="btn-ctl-lock-cg" data-action="lock-caregiver">🔒 Lock Sophie's phone (view alerts)</button>
+            <button class="c-btn" id="btn-ctl-lock-patient" data-action="lock-patient">🔒 Lock John's phone</button>
+            <button class="c-btn" id="btn-ctl-lock-cg" data-action="lock-caregiver">🔒 Lock Sophie's phone</button>
             <button class="c-btn" id="btn-ctl-unlock-all" data-action="unlock-all">🔓 Unlock all phones</button>
-          </div>
-        </div>
-
-        <div class="c-group">
-          <h4 class="c-group-title">Other states</h4>
-          <div class="c-btn-grid c-btn-grid--one" id="grp-fallback">
-            <button class="c-btn" data-state="idle">Idle · no dose due now (12:30)</button>
-            <button class="c-btn c-btn--warn" data-fallback="missed">Missed dose → alert Sophie</button>
           </div>
         </div>
 

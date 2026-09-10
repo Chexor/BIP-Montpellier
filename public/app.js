@@ -11,7 +11,7 @@ const state = {
   layoutMode: 'mobile-phone', // 'mobile-phone' | 'desktop-split'
   seniorMode: false,
   isLocked: false,
-  simulatedTime: '19:00', // '08:00' | '12:30' | '19:00' | '19:10' | '19:35'
+  simulatedTime: '08:00', // '08:00' | '12:30' | '19:00' | '19:10' | '19:35'
 
   pillbox: null,
   schedule: null,
@@ -189,6 +189,13 @@ const dom = {
   btnCgScanLoad: document.getElementById('btn-cg-scan-load'),
   btnCgScanSpeak: document.getElementById('btn-cg-scan-speak'),
 
+  // Caregiver "choose a compartment" wheel (28-slot weekly organiser)
+  cgLoaderSlots: document.getElementById('cg-loader-slots'),
+  cgLoaderHubNum: document.getElementById('cg-loader-hub-num'),
+  cgLoaderHubLabel: document.getElementById('cg-loader-hub-label'),
+  cgLoaderPeriods: document.getElementById('cg-loader-periods'),
+  btnCgLoaderLoad: document.getElementById('btn-cg-loader-load'),
+
   // Terminal modal & toast container
   btnOpenTerminalHint: document.getElementById('btn-open-terminal-hint'),
   terminalModal: document.getElementById('terminal-modal'),
@@ -208,8 +215,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSSE();
   await loadInitialData();
 
-  // Initialize simulated time at 19:00 (Evening)
-  setSimulatedTime('19:00', false);
+  // Initialize simulated time at 08:00 (Morning)
+  setSimulatedTime('08:00', false);
 
   // Set default scan preview
   if (state.medications.length > 0) {
@@ -255,7 +262,7 @@ function lockPhone() {
   renderLockscreenNotifications();
   showToast(
     state.currentRole === 'PATIENT'
-      ? "🔒 Jean's smartphone locked. Patient medication reminders visible."
+      ? "🔒 John's smartphone locked. Patient medication reminders visible."
       : "🔒 Sophie's smartphone locked. Caregiver telemetry & alert notifications visible.",
     'info'
   );
@@ -315,27 +322,27 @@ function setSimulatedTime(timeStr, shouldAnnounce = true) {
     if (timeStr === '08:00') {
       showToast('⏰ Time set to 08:00 (Morning). Dafalgan 1g is due in Compartment 1.', 'info');
       if (state.currentRole === 'PATIENT') {
-        speakText('Good morning Jean. It is 8:00 AM. Time for your morning medication: Dafalgan 1 gram.');
+        speakText('Good morning John. It is 8:00 AM. Time for your morning medication: Dafalgan 1 gram.');
       }
     } else if (timeStr === '12:30') {
       showToast('🌤️ Time set to 12:30 (Lunch). No medication due right now.', 'info');
       if (state.currentRole === 'PATIENT') {
-        speakText('Good afternoon Jean. It is 12:30 PM. No medications are scheduled for lunch.');
+        speakText('Good afternoon John. It is 12:30 PM. No medications are scheduled for lunch.');
       }
     } else if (timeStr === '19:00') {
       showToast('🌙 Time set to 19:00 (Evening). Lipitor 20mg is due in Compartment 3.', 'info');
       if (state.currentRole === 'PATIENT') {
-        speakText('Good evening Jean. It is 7:00 PM. Time for your evening medication: Lipitor 20 milligrams.');
+        speakText('Good evening John. It is 7:00 PM. Time for your evening medication: Lipitor 20 milligrams.');
       }
     } else if (timeStr === '19:10') {
       showToast('⏰ Time set to 19:10 (+10m reminder). Friendly notification sent, no alarm.', 'info');
       if (state.currentRole === 'PATIENT') {
-        speakText('Hi Jean, gentle reminder: your evening medication Lipitor is ready in Compartment 3. Take your time.');
+        speakText('Hi John, gentle reminder: your evening medication Lipitor is ready in Compartment 3. Take your time.');
       }
     } else if (timeStr === '19:35') {
       showToast('🚨 Missed dose simulated! >30 min delay -> Compartment 3 LED flashing red!', 'alert');
       if (state.currentRole === 'PATIENT') {
-        speakText('Warning Jean! You have not taken your evening medication Lipitor. Compartment 3 is flashing red.');
+        speakText('Warning John! You have not taken your evening medication Lipitor. Compartment 3 is flashing red.');
       }
     }
   }
@@ -373,6 +380,9 @@ function renderSpotlightCard() {
 
   dom.patientNextDoseCard.classList.remove('completed-spotlight', 'alert-spotlight');
 
+  // The patient does not press a button to take a dose — the unit dispenses on its own.
+  if (dom.btnSpotlightOpen) dom.btnSpotlightOpen.style.display = 'none';
+
   // Case 1: 08:00 Morning
   if (state.simulatedTime === '08:00') {
     if (comp1 && comp1.state === 'FILLED') {
@@ -380,7 +390,7 @@ function renderSpotlightCard() {
       dom.spotlightTimeText.textContent = '08:00 (Morning)';
       dom.spotlightMedName.textContent = 'Dafalgan 1g (1000mg)';
       dom.spotlightInstructionText.textContent = 'Take 1 effervescent tablet with a large glass of water for chronic joint pain.';
-      dom.spotlightHintBox.innerHTML = '👉 Ready in <strong>Compartment 1 (Morning)</strong>. Compartment 3 is locked until 19:00.';
+      dom.spotlightHintBox.innerHTML = '👉 Ready in <strong>Compartment 1 (Morning)</strong>. Compartment 3 opens at 19:00.';
       dom.btnSpotlightOpen.textContent = '🔓 Take Dafalgan 1g (Open Compartment 1)';
       dom.btnSpotlightOpen.disabled = false;
       dom.btnSpotlightOpen.className = 'action-btn btn-primary';
@@ -394,7 +404,7 @@ function renderSpotlightCard() {
       dom.spotlightStatusTag.textContent = '✔ MORNING DOSE TAKEN';
       dom.spotlightTimeText.textContent = 'Taken at 08:00';
       dom.spotlightMedName.textContent = 'Dafalgan 1g (Taken ✔)';
-      dom.spotlightInstructionText.textContent = 'Well done Jean! Morning dose completed. Next dose is Lipitor 20mg at 19:00 (Evening).';
+      dom.spotlightInstructionText.textContent = 'Well done John! Morning dose completed. Next dose is Lipitor 20mg at 19:00 (Evening).';
       dom.spotlightHintBox.innerHTML = '✨ Compartment 1 emptied. Smart pillbox lid is closed.';
       dom.btnSpotlightOpen.textContent = '✔ Morning Dose Taken (08:00)';
       dom.btnSpotlightOpen.disabled = true;
@@ -409,20 +419,25 @@ function renderSpotlightCard() {
     dom.spotlightTimeText.textContent = '12:30 (Lunch)';
     dom.spotlightMedName.textContent = 'No Medication Due at Lunch';
     dom.spotlightInstructionText.textContent = 'Enjoy your lunch! Your next scheduled dose is Lipitor 20mg at 19:00 (Evening).';
-    dom.spotlightHintBox.innerHTML = '👉 <strong>Compartment 2 (Noon)</strong> is empty. Compartment 3 is locked until 19:00.';
-    dom.btnSpotlightOpen.textContent = '🔒 Compartment 3 Locked Until 19:00';
+    dom.spotlightHintBox.innerHTML = '👉 <strong>Compartment 2 (Noon)</strong> is empty. Compartment 3 opens at 19:00.';
+    dom.btnSpotlightOpen.textContent = '⏳ Compartment 3 opens at 19:00';
     dom.btnSpotlightOpen.disabled = true;
     dom.btnSpotlightOpen.className = 'action-btn btn-locked-disabled';
     return;
   }
 
   // Case 3: 19:00, 19:10, 19:35 Evening
+  const eMeds = compMeds(comp3);
+  const eName = eMeds.length > 1 ? `${eMeds.length} evening tablets` : (eMeds[0]?.brand_name || 'Evening dose');
+  const eList = eMeds.length > 1
+    ? `Take all ${eMeds.length} tablets with a glass of water after dinner: ${eMeds.map((m) => m.brand_name).join(', ')}.`
+    : 'Take 1 tablet with a glass of water after dinner.';
   if (comp3 && comp3.state === 'FILLED') {
     if (state.simulatedTime === '19:35') {
       dom.patientNextDoseCard.classList.add('alert-spotlight');
       dom.spotlightStatusTag.textContent = '🚨 OVERDUE (>30 MIN LATE)';
       dom.spotlightTimeText.textContent = '19:35 (Scheduled 19:00)';
-      dom.spotlightMedName.textContent = 'Lipitor 20mg (OVERDUE)';
+      dom.spotlightMedName.textContent = `${eName} (OVERDUE)`;
       dom.spotlightInstructionText.textContent = 'Your evening dose is 35 minutes late! Sophie has been notified. Please open compartment 3 now.';
       dom.spotlightHintBox.innerHTML = '🔴 <strong>Compartment 3 LED is blinking RED</strong>. Open to confirm intake.';
       dom.btnSpotlightOpen.textContent = '🚨 Take Overdue Dose (Open Compartment 3)';
@@ -431,35 +446,35 @@ function renderSpotlightCard() {
     } else if (state.simulatedTime === '19:10') {
       dom.spotlightStatusTag.textContent = '⏰ 10M GENTLE REMINDER';
       dom.spotlightTimeText.textContent = '19:10 (Scheduled 19:00)';
-      dom.spotlightMedName.textContent = 'Lipitor 20mg (Waiting)';
-      dom.spotlightInstructionText.textContent = 'A friendly reminder: 5–10 minutes late is completely fine. Compartment 3 is unlocked and waiting.';
+      dom.spotlightMedName.textContent = `${eName} (Waiting)`;
+      dom.spotlightInstructionText.textContent = 'A friendly reminder: 5–10 minutes late is completely fine. Compartment 3 is waiting.';
       dom.spotlightHintBox.innerHTML = '🟢 <strong>Compartment 3 is glowing green</strong>. Take your time with a glass of water.';
-      dom.btnSpotlightOpen.textContent = '🔓 Take Lipitor 20mg (Open Compartment 3)';
+      dom.btnSpotlightOpen.textContent = `🔓 Take ${eName} (Open Compartment 3)`;
       dom.btnSpotlightOpen.disabled = false;
       dom.btnSpotlightOpen.className = 'action-btn btn-primary';
     } else {
       dom.spotlightStatusTag.textContent = '🌙 SCHEDULED DOSE DUE';
       dom.spotlightTimeText.textContent = '19:00 (Evening)';
-      dom.spotlightMedName.textContent = 'Lipitor 20mg';
-      dom.spotlightInstructionText.textContent = 'Take 1 tablet with a glass of water after dinner. Helps manage cholesterol levels.';
+      dom.spotlightMedName.textContent = eName;
+      dom.spotlightInstructionText.textContent = eList;
       dom.spotlightHintBox.innerHTML = '👉 Ready in <strong>Compartment 3 (Evening)</strong> of your pillbox.';
-      dom.btnSpotlightOpen.textContent = '🔓 Take Lipitor 20mg (Open Compartment 3)';
+      dom.btnSpotlightOpen.textContent = `🔓 Take ${eName} (Open Compartment 3)`;
       dom.btnSpotlightOpen.disabled = false;
       dom.btnSpotlightOpen.className = 'action-btn btn-primary';
     }
 
     dom.btnSpotlightOpen.onclick = async () => {
       await openCompartmentAction(3);
-      speakText('Intake confirmed! You took Lipitor 20 milligrams with water. Have a good evening Jean.');
+      speakText('Intake confirmed. Have a good evening John.');
     };
   } else {
     // Comp 3 is TAKEN!
     dom.patientNextDoseCard.classList.add('completed-spotlight');
     dom.spotlightStatusTag.textContent = '🎉 ALL DOSES COMPLETED FOR TODAY';
     dom.spotlightTimeText.textContent = `Taken at ${state.simulatedTime}`;
-    dom.spotlightMedName.textContent = 'Lipitor 20mg (Taken ✔)';
-    dom.spotlightInstructionText.textContent = 'Great job Jean! All your medications for today have been taken on schedule.';
-    dom.spotlightHintBox.innerHTML = '✨ Compartment 3 emptied. Pillbox is locked for the night. Sleep well! 🌙';
+    dom.spotlightMedName.textContent = 'Evening dose (Taken ✔)';
+    dom.spotlightInstructionText.textContent = 'Great job John! All your medications for today have been taken on schedule.';
+    dom.spotlightHintBox.innerHTML = '✨ Compartment 3 emptied. No more doses scheduled tonight. Sleep well! 🌙';
     dom.btnSpotlightOpen.textContent = '✔ Evening Dose Taken (Compartment 3)';
     dom.btnSpotlightOpen.disabled = true;
     dom.btnSpotlightOpen.className = 'action-btn btn-completed';
@@ -467,220 +482,191 @@ function renderSpotlightCard() {
 }
 
 // ===================================================================
-// ROLE-SPECIFIC NOTIFICATIONS (Jean vs. Sophie)
+// ROLE-SPECIFIC NOTIFICATIONS (John vs. Sophie)
 // ===================================================================
 
 function getRoleNotifications(role, timeStr) {
   const comp3 = state.pillbox?.compartments?.find((c) => c.compartment_index === 3);
   const isComp3Taken = comp3 && comp3.state === 'TAKEN';
-  const notifs = [];
 
   if (role === 'PATIENT') {
-    // 1. Special & Custom Messages sent from Sophie / Caregiver (ALWAYS on John's Lockscreen!)
-    const patientMsgs = (state.messages || []).filter((m) => m.to === 'PATIENT' || m.to === 'ALL');
-    patientMsgs.forEach((msg) => {
-      let timeFormatted = 'Just now';
-      if (msg.timestamp) {
-        try {
-          const d = new Date(msg.timestamp);
-          timeFormatted = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } catch {
-          timeFormatted = 'Recent';
-        }
-      }
-      notifs.push({
-        id: `msg-${msg.id}`,
-        app: '💬 Sophie (Daughter)',
-        title: msg.title || 'Personal Message from Sophie',
-        body: msg.content,
-        time: timeFormatted,
-        urgent: msg.type === 'ALERT' || (msg.title && msg.title.toLowerCase().includes('urgent')),
-        targetTab: 'tab-patient-today',
-        isMessage: true,
-        messageId: msg.id,
-      });
-    });
-
-    // 2. Pillbox Intakes & Scheduled Reminders
     if (isComp3Taken && (timeStr === '19:00' || timeStr === '19:10' || timeStr === '19:35')) {
-      notifs.push({
-        id: 'notif-p-taken',
-        app: '✅ Dosette Pillbox',
-        title: 'Evening Dose Completed',
-        body: 'You took your Lipitor 20mg on time. All doses are completed for today!',
-        time: timeStr,
-        urgent: false,
-        targetTab: 'tab-patient-today',
-      });
-    } else if (timeStr === '08:00') {
-      notifs.push({
-        id: 'notif-p-0800',
-        app: '💊 Dosette Pillbox',
-        title: 'Morning Dose: Dafalgan 1g',
-        body: 'Good morning Jean! Time for your morning dose (08:00). Compartment 1 is unlocked and glowing green.',
-        time: '08:00 AM',
-        urgent: false,
-        targetTab: 'tab-patient-today',
-        compIndex: 1,
-      });
-    } else if (timeStr === '12:30') {
-      notifs.push({
-        id: 'notif-p-1230',
-        app: '💊 Dosette Pillbox',
-        title: 'Lunch Status: All Caught Up',
-        body: 'No medication scheduled for lunch. Enjoy your meal! Next dose at 19:00.',
-        time: '12:30 PM',
-        urgent: false,
-        targetTab: 'tab-patient-today',
-      });
-    } else if (timeStr === '19:00') {
-      notifs.push({
-        id: 'notif-p-1900',
-        app: '💊 Dosette Pillbox',
-        title: 'Evening Dose: Lipitor 20mg',
-        body: 'Time for your evening dose (19:00). Compartment 3 is illuminated and ready for you.',
-        time: '7:00 PM',
-        urgent: false,
-        targetTab: 'tab-patient-today',
-        compIndex: 3,
-      });
-    } else if (timeStr === '19:10') {
-      notifs.push({
-        id: 'notif-p-1910',
-        app: '💊 Dosette Pillbox',
-        title: 'Friendly Reminder: Lipitor 20mg',
-        body: 'A few minutes late is completely normal. Compartment 3 is glowing green when you are ready.',
-        time: '7:10 PM',
-        urgent: false,
-        targetTab: 'tab-patient-today',
-        compIndex: 3,
-      });
-      if (patientMsgs.length === 0) {
-        notifs.push({
-          id: 'notif-p-msg',
-          app: '💬 Sophie (Daughter)',
-          title: 'Sophie Dupont',
-          body: 'Hi Dad! Just checking in after dinner. Did you remember your Lipitor? ❤️',
-          time: '7:11 PM',
+      return [
+        {
+          id: 'notif-p-taken',
+          app: '✅ Dosette Pillbox',
+          title: 'Evening Dose Completed',
+          body: 'You took your Lipitor 20mg on time. All doses are completed for today!',
+          time: timeStr,
           urgent: false,
           targetTab: 'tab-patient-today',
-        });
-      }
-    } else if (timeStr === '19:35') {
-      notifs.push({
-        id: 'notif-p-1935',
-        app: '🚨 DOSETTE ALERT',
-        title: 'URGENT: Missed Dose (Lipitor 20mg)',
-        body: 'Evening dose is 35m overdue! Compartment 3 LED is blinking red. Tap to take medication.',
-        time: '7:35 PM',
-        urgent: true,
-        targetTab: 'tab-patient-today',
-        compIndex: 3,
-      });
-      if (patientMsgs.length === 0) {
-        notifs.push({
-          id: 'notif-p-msg-urgent',
-          app: '💬 Sophie (Daughter)',
-          title: 'Urgent Message from Sophie',
-          body: 'Dad, I got an alert on my phone that you missed your 19:00 Lipitor. Are you okay? Call me if needed!',
-          time: '7:36 PM',
-          urgent: true,
-          targetTab: 'tab-patient-today',
-        });
-      }
-    }
-    return notifs;
-  } else {
-    // Caregiver (Sophie) receives telemetry confirmations, compliance metrics, and incoming patient messages
-    const cgMsgs = (state.messages || []).filter((m) => m.to === 'CAREGIVER');
-    cgMsgs.forEach((msg) => {
-      let timeFormatted = 'Just now';
-      if (msg.timestamp) {
-        try {
-          const d = new Date(msg.timestamp);
-          timeFormatted = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } catch {
-          timeFormatted = 'Recent';
-        }
-      }
-      notifs.push({
-        id: `msg-${msg.id}`,
-        app: '💬 Jean (Patient)',
-        title: msg.title || 'Message from Jean',
-        body: msg.content,
-        time: timeFormatted,
-        urgent: false,
-        targetTab: 'tab-cg-inbox',
-      });
-    });
-
-    if (isComp3Taken && (timeStr === '19:00' || timeStr === '19:10' || timeStr === '19:35')) {
-      notifs.push({
-        id: 'notif-cg-taken',
-        app: '✅ Adherence Confirmed',
-        title: 'Intake Confirmed: Jean Dupont',
-        body: `Jean took Lipitor 20mg at ${timeStr} successfully. Daily compliance: 100%.`,
-        time: timeStr,
-        urgent: false,
-        targetTab: 'tab-cg-timeline',
-      });
-      return notifs;
+        },
+      ];
     }
 
     if (timeStr === '08:00') {
-      notifs.push({
-        id: 'notif-cg-0800',
-        app: '📊 Caregiver Telemetry',
-        title: 'Dose Due: Jean Dupont',
-        body: "Jean's 08:00 Morning Dafalgan 1g is due. Pillbox status: Connected 🟢 (Battery 88%).",
-        time: '08:00 AM',
-        urgent: false,
-        targetTab: 'tab-cg-timeline',
-      });
+      return [
+        {
+          id: 'notif-p-0800',
+          app: '💊 Dosette Pillbox',
+          title: 'Morning Dose: Dafalgan 1g',
+          body: 'Good morning John! Time for your morning dose (08:00). Compartment 1 is unlocked and glowing green.',
+          time: '08:00 AM',
+          urgent: false,
+          targetTab: 'tab-patient-today',
+          compIndex: 1,
+        },
+      ];
     } else if (timeStr === '12:30') {
-      notifs.push({
-        id: 'notif-cg-1230',
-        app: '✅ Adherence Confirmation',
-        title: 'Intake Confirmed: Jean Dupont',
-        body: 'Jean took Dafalgan 1g at 08:02 on time. Compliance today: 100%. Next dose: 19:00.',
-        time: '12:30 PM',
-        urgent: false,
-        targetTab: 'tab-cg-timeline',
-      });
+      return [
+        {
+          id: 'notif-p-1230',
+          app: '💊 Dosette Pillbox',
+          title: 'Lunch Status: All Caught Up',
+          body: 'No medication scheduled for lunch. Enjoy your meal! Next dose at 19:00.',
+          time: '12:30 PM',
+          urgent: false,
+          targetTab: 'tab-patient-today',
+        },
+      ];
     } else if (timeStr === '19:00') {
-      notifs.push({
-        id: 'notif-cg-1900',
-        app: '📦 Pillbox Telemetry',
-        title: 'Evening Dose Unlocked: Jean Dupont',
-        body: "Compartment 3 (Lipitor 20mg) unlocked on Jean's smart pillbox. Awaiting sensor confirmation.",
-        time: '7:00 PM',
-        urgent: false,
-        targetTab: 'tab-cg-timeline',
-      });
+      return [
+        {
+          id: 'notif-p-1900',
+          app: '💊 Dosette Pillbox',
+          title: 'Evening Dose: Lipitor 20mg',
+          body: 'Time for your evening dose (19:00). Compartment 3 is illuminated and ready for you.',
+          time: '7:00 PM',
+          urgent: false,
+          targetTab: 'tab-patient-today',
+          compIndex: 3,
+        },
+      ];
     } else if (timeStr === '19:10') {
-      notifs.push({
-        id: 'notif-cg-1910',
-        app: '⏳ Follow-Up Dispatched',
-        title: '10m Elapsed: Jean Dupont',
-        body: 'Jean has not opened Box 3 yet (10m late). Automatic gentle reminder dispatched to his phone.',
-        time: '7:10 PM',
-        urgent: false,
-        targetTab: 'tab-cg-timeline',
-      });
+      return [
+        {
+          id: 'notif-p-1910',
+          app: '💊 Dosette Pillbox',
+          title: 'Friendly Reminder: Lipitor 20mg',
+          body: 'A few minutes late is completely normal. Compartment 3 is glowing green when you are ready.',
+          time: '7:10 PM',
+          urgent: false,
+          targetTab: 'tab-patient-today',
+          compIndex: 3,
+        },
+        {
+          id: 'notif-p-msg',
+          app: '💬 Sophie (Caregiver)',
+          title: 'Sophie Dupont',
+          body: 'Hi John! Just checking in after dinner. Did you remember your Lipitor? ❤️',
+          time: '7:11 PM',
+          urgent: false,
+          targetTab: 'tab-patient-inbox',
+        },
+      ];
     } else if (timeStr === '19:35') {
-      notifs.push({
-        id: 'notif-cg-1935',
-        app: '🚨 CRITICAL ESCALATION',
-        title: 'MISSED DOSE ALERT: Jean Dupont',
-        body: 'Jean has not taken 19:00 Lipitor after 35 minutes! Pillbox LED blinking red. Tap to call patient.',
-        time: '7:35 PM',
-        urgent: true,
-        targetTab: 'tab-cg-timeline',
-      });
+      return [
+        {
+          id: 'notif-p-1935',
+          app: '🚨 DOSETTE ALERT',
+          title: 'URGENT: Missed Dose (Lipitor 20mg)',
+          body: 'Evening dose is 35m overdue! Compartment 3 LED is blinking red. Tap to take medication.',
+          time: '7:35 PM',
+          urgent: true,
+          targetTab: 'tab-patient-today',
+          compIndex: 3,
+        },
+        {
+          id: 'notif-p-msg-urgent',
+          app: '💬 Sophie (Caregiver)',
+          title: 'Urgent Message from Sophie',
+          body: 'John, I got an alert on my phone that you missed your 19:00 Lipitor. Are you okay? Call me if needed!',
+          time: '7:36 PM',
+          urgent: true,
+          targetTab: 'tab-patient-inbox',
+        },
+      ];
+    }
+  } else {
+    // Caregiver (Sophie) receives telemetry confirmations, compliance metrics, and escalation alerts
+    if (isComp3Taken && (timeStr === '19:00' || timeStr === '19:10' || timeStr === '19:35')) {
+      return [
+        {
+          id: 'notif-cg-taken',
+          app: '✅ Adherence Confirmed',
+          title: 'Intake Confirmed: John Dupont',
+          body: `John took Lipitor 20mg at ${timeStr} successfully. Daily compliance: 100%.`,
+          time: timeStr,
+          urgent: false,
+          targetTab: 'tab-cg-timeline',
+        },
+      ];
     }
 
-    return notifs;
+    if (timeStr === '08:00') {
+      return [
+        {
+          id: 'notif-cg-0800',
+          app: '📊 Caregiver Telemetry',
+          title: 'Dose Due: John Dupont',
+          body: "John's 08:00 Morning Dafalgan 1g is due. Pillbox status: Connected 🟢 (Battery 88%).",
+          time: '08:00 AM',
+          urgent: false,
+          targetTab: 'tab-cg-timeline',
+        },
+      ];
+    } else if (timeStr === '12:30') {
+      return [
+        {
+          id: 'notif-cg-1230',
+          app: '✅ Adherence Confirmation',
+          title: 'Intake Confirmed: John Dupont',
+          body: 'John took Dafalgan 1g at 08:02 on time. Compliance today: 100%. Next dose: 19:00.',
+          time: '12:30 PM',
+          urgent: false,
+          targetTab: 'tab-cg-timeline',
+        },
+      ];
+    } else if (timeStr === '19:00') {
+      return [
+        {
+          id: 'notif-cg-1900',
+          app: '📦 Pillbox Telemetry',
+          title: 'Evening Dose Unlocked: John Dupont',
+          body: "Compartment 3 (Lipitor 20mg) unlocked on John's smart pillbox. Awaiting sensor confirmation.",
+          time: '7:00 PM',
+          urgent: false,
+          targetTab: 'tab-cg-timeline',
+        },
+      ];
+    } else if (timeStr === '19:10') {
+      return [
+        {
+          id: 'notif-cg-1910',
+          app: '⏳ Follow-Up Dispatched',
+          title: '10m Elapsed: John Dupont',
+          body: 'John has not opened Box 3 yet (10m late). Automatic gentle reminder dispatched to his phone.',
+          time: '7:10 PM',
+          urgent: false,
+          targetTab: 'tab-cg-timeline',
+        },
+      ];
+    } else if (timeStr === '19:35') {
+      return [
+        {
+          id: 'notif-cg-1935',
+          app: '🚨 CRITICAL ESCALATION',
+          title: 'MISSED DOSE ALERT: John Dupont',
+          body: 'John has not taken 19:00 Lipitor after 35 minutes! Pillbox LED blinking red. Tap to call patient.',
+          time: '7:35 PM',
+          urgent: true,
+          targetTab: 'tab-cg-timeline',
+        },
+      ];
+    }
   }
+
+  return [];
 }
 
 // Render lockscreen push notification cards
@@ -691,7 +677,7 @@ function renderLockscreenNotifications() {
   // Update lockscreen persona badge
   if (dom.lockscreenOwnerBadge) {
     dom.lockscreenOwnerBadge.textContent =
-      state.currentRole === 'PATIENT' ? "Jean's Phone 👴" : "Sophie's Phone 👩‍⚕️";
+      state.currentRole === 'PATIENT' ? "John's Phone 👴" : "Sophie's Phone 👩‍⚕️";
   }
 
   const roleNotifs = getRoleNotifications(state.currentRole, state.simulatedTime);
@@ -761,14 +747,14 @@ function renderPatientSchedule() {
     dom.todayScheduleBadge.className = 'sdc-status-badge badge-today';
     if (dom.schedCheckMorning) dom.schedCheckMorning.textContent = '🟢 Unlocked / Ready';
     if (dom.schedSlotMorning) dom.schedSlotMorning.className = 'sdc-slot active';
-    if (dom.schedCheckEvening) dom.schedCheckEvening.textContent = '🔒 Locked until 19:00';
+    if (dom.schedCheckEvening) dom.schedCheckEvening.textContent = '⏳ Opens at 19:00';
     if (dom.schedSlotEvening) dom.schedSlotEvening.className = 'sdc-slot upcoming';
   } else if (isNoon) {
     dom.todayScheduleBadge.textContent = 'Morning Completed';
     dom.todayScheduleBadge.className = 'sdc-status-badge badge-complete';
     if (dom.schedCheckMorning) dom.schedCheckMorning.textContent = '✔ Taken 08:02';
     if (dom.schedSlotMorning) dom.schedSlotMorning.className = 'sdc-slot completed';
-    if (dom.schedCheckEvening) dom.schedCheckEvening.textContent = '🔒 Locked until 19:00';
+    if (dom.schedCheckEvening) dom.schedCheckEvening.textContent = '⏳ Opens at 19:00';
     if (dom.schedSlotEvening) dom.schedSlotEvening.className = 'sdc-slot upcoming';
   } else if (isEvening) {
     dom.todayScheduleBadge.textContent = 'Evening Dose Active';
@@ -846,7 +832,6 @@ function handleLiveEvent(data) {
       state.messages.unshift(newMsg);
       playChime();
       renderLockscreenNotifications();
-      renderPatientSophieNote();
 
       if (newMsg.to === state.currentRole) {
         showToast(`📬 New message from ${newMsg.sender_name}: "${newMsg.title}"`, 'info');
@@ -908,11 +893,11 @@ function switchRole(newRole) {
 
   // Update header subtitle and role visibility
   if (newRole === 'PATIENT') {
-    dom.headerSubtitle.innerHTML = 'Logged in as: <strong>Jean Dupont (Patient)</strong>';
+    dom.headerSubtitle.innerHTML = 'Logged in as: <strong>John Dupont (Patient)</strong>';
     dom.roleViewPatient.classList.remove('hidden');
     dom.roleViewCaregiver.classList.add('hidden');
     dom.roleViewDevice.classList.add('hidden');
-    if (dom.navPatientTabs) dom.navPatientTabs.classList.add('hidden');
+    if (dom.navPatientTabs) dom.navPatientTabs.classList.remove('hidden');
     if (dom.navCaregiverTabs) dom.navCaregiverTabs.classList.add('hidden');
     activateTab('tab-patient-today');
   } else if (newRole === 'CAREGIVER') {
@@ -934,7 +919,7 @@ function switchRole(newRole) {
 
   renderAll();
   const roleLabel = newRole === 'PATIENT'
-    ? '👴 Jean Dupont (Patient)'
+    ? '👴 John Dupont (Patient)'
     : newRole === 'CAREGIVER' ? '👩‍⚕️ Sophie Dupont (Caregiver)' : '⚙️ Dosette Pillbox Device';
   showToast(`Viewing ${roleLabel}`, 'info');
 }
@@ -1013,20 +998,43 @@ function renderAll() {
   renderPatientSchedule();
   renderSpotlightCard();
   renderLockscreenNotifications();
-  renderPatientSophieNote();
+  if (typeof renderCgLoader === 'function') renderCgLoader();
+}
+
+// A compartment can hold several medicines. Return the list of medicine objects.
+function compMeds(comp) {
+  if (!comp) return [];
+  const ids = (comp.medication_ids && comp.medication_ids.length)
+    ? comp.medication_ids
+    : (comp.medication_id ? [comp.medication_id] : []);
+  return ids.map((id) => state.medications.find((m) => m.id === id) || { id, brand_name: id });
+}
+// Short label for what's in a compartment: one name, or "N tablets".
+function compLabelText(comp) {
+  const meds = compMeds(comp);
+  if (meds.length === 0) return 'Empty';
+  if (meds.length === 1) return meds[0].brand_name;
+  return `${meds.length} tablets`;
+}
+
+// Which of the 28 weekly compartments is "up next" for the simulated clock.
+function currentSlotIndex() {
+  const t = state.simulatedTime;
+  if (t === '08:00') return 1;   // Today · Morning
+  if (t === '12:30') return 2;   // Today · Noon
+  if (t === '22:00') return 4;   // Today · Night
+  return 3;                      // 19:00 / 19:10 / 19:35 -> Today · Evening
 }
 
 function renderDeviceWheel() {
   if (!dom.deviceWheel || !state.pillbox?.compartments || !dom.deviceDoseScreen) return;
 
   const compartments = state.pillbox.compartments;
-  const currentCompartment = state.simulatedTime === '08:00'
-    ? compartments.find((comp) => comp.compartment_index === 1)
-    : compartments.find((comp) => comp.compartment_index === 3) || compartments[0];
-  const currentIndex = currentCompartment?.compartment_index || 1;
+  const currentIndex = currentSlotIndex();
+  const currentCompartment = compartments.find((comp) => comp.compartment_index === currentIndex) || compartments[0];
   const hasDose = ['08:00', '19:00', '19:10', '19:35'].includes(state.simulatedTime) || state.deviceDosePreview;
   const sliceAngle = 360 / 28;
-  const activePosition = 14 + currentIndex - 1;
+  const activePosition = currentIndex;
   const wheelOffset = 180 - ((activePosition - 1) * sliceAngle);
 
   dom.deviceWheel.classList.toggle('hidden', hasDose);
@@ -1041,47 +1049,34 @@ function renderDeviceWheel() {
   void visibleDevicePanel.offsetWidth;
   visibleDevicePanel.classList.add('device-fade-in');
   if (hasDose) {
-    const medication = state.medications.find((med) => med.id === currentCompartment?.medication_id);
-    const medicationName = medication?.brand_name || 'Scheduled medication';
-    const medicationDetails = medication
-      ? `${medication.dosage} • ${medication.generic_name}`
-      : 'Check your medication schedule.';
+    const meds = compMeds(currentCompartment);
+    const medication = meds[0] || null;
+    const medicationName = meds.length > 1
+      ? `${meds.length} tablets`
+      : (medication?.brand_name || 'Scheduled medication');
     dom.deviceDoseScreen.innerHTML = `
       <div class="device-dose-top">
         <span class="device-dose-label">DOSE READY</span>
-        <strong>Compartment ${currentIndex}</strong>
-        <span>${state.simulatedTime} • ${medicationName}</span>
+        <strong>${medicationName}</strong>
+        <span>Compartment ${currentIndex} · ${state.simulatedTime}</span>
       </div>
       <div class="device-dose-bottom">
         <button class="device-dose-info" type="button" aria-label="Medication information" title="Medication information">
           <span class="device-dose-action-icon">i</span>
         </button>
-        <button class="device-call-hold" type="button" aria-label="Hold for 3.5 seconds to call caregiver" title="Hold to call caregiver">
+        <button class="device-call-hold" type="button" aria-label="Call caregiver" title="Call caregiver">
           <span class="device-dose-action-icon">☎</span>
-          <span class="device-hold-progress"></span>
         </button>
       </div>
     `;
     const infoButton = dom.deviceDoseScreen.querySelector('.device-dose-info');
     const callButton = dom.deviceDoseScreen.querySelector('.device-call-hold');
-    infoButton.addEventListener('click', () => showDeviceMedInfo(medication, medicationName));
-    let holdTimer;
-    const clearHold = () => {
-      window.clearTimeout(holdTimer);
-      callButton.classList.remove('holding');
-    };
-    callButton.addEventListener('pointerdown', () => {
-      callButton.classList.add('holding');
-      holdTimer = window.setTimeout(() => {
-        callButton.classList.remove('holding');
-        speakText('Calling your caregiver Sophie.');
-        showToast('Calling caregiver Sophie Dupont.', 'success');
-        alert('Calling caregiver Sophie Dupont (+32 470 12 34 56)...');
-      }, 3500);
+    infoButton.addEventListener('click', () => showDeviceMedInfo(currentCompartment, medicationName));
+    callButton.addEventListener('click', () => {
+      speakText('Calling your caregiver Sophie.');
+      showToast('Calling caregiver Sophie Dupont.', 'success');
+      alert('📞 Calling caregiver Sophie Dupont\n+32 470 12 34 56');
     });
-    callButton.addEventListener('pointerup', clearHold);
-    callButton.addEventListener('pointerleave', clearHold);
-    callButton.addEventListener('pointercancel', clearHold);
   }
 
   dom.deviceWheel.innerHTML = `
@@ -1096,7 +1091,7 @@ function renderDeviceWheel() {
   if (dom.deviceScreenStatus) dom.deviceScreenStatus.textContent = `Compartment ${currentIndex} is positioned at the opening.`;
 
   for (let index = 1; index <= 28; index += 1) {
-    const configuredCompartment = compartments.find((comp) => 14 + comp.compartment_index - 1 === index);
+    const configuredCompartment = compartments.find((comp) => comp.compartment_index === index);
     const slot = document.createElement('div');
     const isCurrent = index === activePosition;
     const isFilled = configuredCompartment?.state === 'FILLED';
@@ -1118,34 +1113,83 @@ function renderDeviceWheel() {
   };
 }
 
-// Orange "i" button on the dispenser display: speak a plain-language explanation
-// and show it in large, high-contrast text for elderly patients.
-function showDeviceMedInfo(medication, medicationName) {
+function deviceScreenTakeover() {
+  dom.deviceDoseScreen.classList.remove('hidden');
+  dom.deviceDoseScreen.style.display = 'flex';
+  if (dom.deviceWheel) {
+    dom.deviceWheel.classList.add('hidden');
+    dom.deviceWheel.style.display = 'none';
+  }
+}
+
+// "i" button: speak a plain, short explanation and show it big on the screen.
+function showDeviceMedInfo(comp, medicationName) {
   if (!dom.deviceDoseScreen) return;
+  deviceScreenTakeover();
 
-  const summary = medication?.ai_explanation?.summary || 'This is your scheduled medication.';
-  const howTo = medication?.ai_explanation?.simple_instructions || 'Take it the way your caregiver has set up your schedule.';
-  const spoken = `This is ${medicationName}. ${summary} How to take it: ${howTo}`;
-
-  speakText(spoken);
+  const meds = compMeds(comp);
+  let line;
+  let spoken;
+  if (meds.length > 1) {
+    line = meds.map((m) => m.brand_name).join('<br>');
+    spoken = `This dose has ${meds.length} tablets: ${meds.map((m) => m.brand_name).join(', ')}. Take them all with water.`;
+  } else {
+    const m = meds[0];
+    line = m ? `${m.ai_explanation?.summary || ''}` : '';
+    spoken = m
+      ? `This is ${m.brand_name}. ${m.ai_explanation?.summary || ''} ${m.ai_explanation?.simple_instructions || ''}`
+      : `This is ${medicationName}.`;
+  }
 
   dom.deviceDoseScreen.innerHTML = `
-    <div class="device-info-panel">
-      <span class="device-info-kicker">WHAT IS THIS MEDICINE?</span>
-      <strong class="device-info-name">${medicationName}</strong>
-      <p class="device-info-summary">${summary}</p>
-      <p class="device-info-howto"><b>How to take it:</b> ${howTo}</p>
-      <div class="device-info-actions">
-        <button class="device-info-btn device-info-again" type="button">🔊 Read again</button>
-        <button class="device-info-btn device-info-back" type="button">← Back</button>
+    <div class="device-simple">
+      <span class="ds-kicker">YOUR MEDICINE</span>
+      <strong class="ds-title">${medicationName}</strong>
+      <p class="ds-line">${line}</p>
+      <div class="ds-actions">
+        <button class="ds-btn ds-again" type="button">🔊 Again</button>
+        <button class="ds-btn ds-back" type="button">← Back</button>
       </div>
     </div>
   `;
+  dom.deviceDoseScreen.querySelector('.ds-again').addEventListener('click', () => speakText(spoken));
+  dom.deviceDoseScreen.querySelector('.ds-back').addEventListener('click', () => renderDeviceWheel());
+  speakText(spoken);
+}
 
-  dom.deviceDoseScreen.querySelector('.device-info-again')
-    .addEventListener('click', () => speakText(spoken));
-  dom.deviceDoseScreen.querySelector('.device-info-back')
-    .addEventListener('click', () => renderDeviceWheel());
+// The dispenser's built-in camera checks the cup after the dose drops.
+// 'dispensed' just shows the normal dose screen (info + call-caregiver buttons);
+// 'one-left' warns; 'all-clear' confirms.
+function showDeviceCup(cupState) {
+  if (!dom.deviceDoseScreen) return;
+
+  // "Dispensed" = the standard DOSE READY screen with the two buttons.
+  if (cupState === 'dispensed') {
+    renderDeviceWheel();
+    return;
+  }
+
+  deviceScreenTakeover();
+
+  const conf = {
+    'one-left': { cls: 'cup-warn', pills: 1, title: '⚠ ONE LEFT', msg: 'Take the last tablet', speak: 'Warning. One tablet is still in the cup. Please take the last tablet.' },
+    'all-clear': { cls: 'cup-clear', pills: 0, title: '✓ ALL TAKEN', msg: 'Dose complete', speak: 'Well done. All medication taken. Your dose is complete.' },
+  }[cupState];
+  if (!conf) return;
+
+  const pillDots = Array.from({ length: conf.pills }, () => '<span class="cup-pill"></span>').join('');
+
+  dom.deviceDoseScreen.innerHTML = `
+    <div class="device-simple cup ${conf.cls}">
+      <span class="ds-kicker">📷 CUP CAMERA</span>
+      <div class="ds-cup"><div class="ds-cup-body">${pillDots}</div></div>
+      <strong class="ds-title">${conf.title}</strong>
+      <p class="ds-line">${conf.msg}</p>
+      <button class="ds-btn ds-back" type="button">← Back</button>
+    </div>
+  `;
+  dom.deviceDoseScreen.querySelector('.ds-back').addEventListener('click', () => renderDeviceWheel());
+  speakText(conf.speak);
 }
 
 function renderHardwareStatus() {
@@ -1163,9 +1207,9 @@ function renderHardwareStatus() {
 
 /**
  * SMART COMPARTMENT LOCKING & SAFETY RULE:
- * 1. Jean only takes medication when scheduled.
- * 2. Jean CANNOT open a compartment before scheduled time (e.g. Comp 3 is locked until 19:00).
- * 3. Jean CANNOT refill or place pills (refill is caregiver-only).
+ * 1. John only takes medication when scheduled.
+ * 2. John CANNOT open a compartment before scheduled time (e.g. Comp 3 is locked until 19:00).
+ * 3. John CANNOT refill or place pills (refill is caregiver-only).
  */
 function renderCompartments() {
   if (!state.pillbox || !state.pillbox.compartments) return;
@@ -1176,12 +1220,10 @@ function renderCompartments() {
   if (dom.patientCompartmentsList) {
     dom.patientCompartmentsList.querySelectorAll('.dispenser-slot').forEach((slot) => slot.remove());
 
-    const currentCompartment = state.simulatedTime === '08:00'
-      ? comps.find((comp) => comp.compartment_index === 1)
-      : (comps.find((comp) => comp.compartment_index === 3) || comps[0]);
+    const currentCompartment = comps.find((comp) => comp.compartment_index === currentSlotIndex()) || comps[0];
     const currentCompartmentIndex = currentCompartment?.compartment_index;
     const sliceAngle = 360 / 28;
-    const currentVisualIndex = currentCompartmentIndex ? 14 + currentCompartmentIndex - 1 : 14;
+    const currentVisualIndex = currentCompartmentIndex || 1;
     const wheelOffset = 180 - ((currentVisualIndex - 1) * sliceAngle);
     dom.patientCompartmentsList.style.setProperty('--wheel-offset', `${wheelOffset}deg`);
     if (dom.patientCurrentSlot && currentCompartment) {
@@ -1189,7 +1231,7 @@ function renderCompartments() {
     }
 
     const patientSlots = Array.from({ length: 28 }, (_, index) => {
-      const comp = comps.find((item) => 14 + item.compartment_index - 1 === index + 1);
+      const comp = comps.find((item) => item.compartment_index === index + 1);
       return { comp, index: index + 1 };
     });
 
@@ -1327,10 +1369,15 @@ function renderCompartments() {
   if (dom.caregiverCompartmentsList) {
     dom.caregiverCompartmentsList.innerHTML = '';
 
+    const scannedMed = state.currentCgScan || state.currentScan || null;
+
     comps.forEach((comp) => {
-      const defaultMedId = comp.compartment_index === 1 ? 'med_001' : (comp.compartment_index === 2 ? 'med_003' : 'med_002');
-      const med = state.medications.find((m) => m.id === (comp.medication_id || defaultMedId));
-      const medName = med ? med.brand_name : (comp.medication_id || 'Prescription dose');
+      const medsHere = compMeds(comp);
+      const isEmpty = comp.state === 'EMPTY' || medsHere.length === 0;
+      const medName = isEmpty
+        ? 'Empty'
+        : (medsHere.length > 1 ? `${medsHere.length} medicines` : medsHere[0].brand_name);
+      const medListHtml = medsHere.map((m) => `<span class="cd-line">💊 ${m.brand_name}</span>`).join('');
 
       // Find last intake log for this compartment
       const compLogs = (state.schedule?.intake_logs || []).filter((l) => l.compartment_index === comp.compartment_index);
@@ -1340,7 +1387,9 @@ function renderCompartments() {
       const stateClass = comp.state === 'FILLED' ? 'state-filled' : (comp.state === 'TAKEN' ? 'state-taken' : 'state-empty');
       const alertClass = comp.led_active ? 'state-alert' : '';
 
-      card.className = `compartment-card ${stateClass} ${alertClass}`;
+      // Collapsible: keep filled / alert / today's (1-4) open, everything else collapsed
+      const startOpen = comp.state === 'FILLED' || comp.led_active || comp.compartment_index <= 4;
+      card.className = `compartment-card is-collapsible ${stateClass} ${alertClass}${startOpen ? '' : ' collapsed'}`;
 
       let pillEmoji = '💊';
       let badgeText = 'Loaded';
@@ -1348,7 +1397,7 @@ function renderCompartments() {
 
       if (comp.state === 'EMPTY') {
         pillEmoji = '⚪';
-        badgeText = 'Needs Refill';
+        badgeText = 'Empty';
         badgeClass = 'state-badge-empty';
       } else if (comp.state === 'TAKEN') {
         pillEmoji = '✨';
@@ -1363,19 +1412,18 @@ function renderCompartments() {
           : (comp.compartment_index === 1 ? '08:07' : '19:07');
         detailHtml = `
           <span class="cd-line">✅ <strong>Taken:</strong> Today at ${timeStr}</span>
-          <span class="cd-line">💊 <strong>Was in box:</strong> ${medName} (1 tablet)</span>
-          <span class="cd-line cd-refill-note">🔄 <strong>Refill needed:</strong> ${medName} for next dose</span>
+          <span class="cd-line">⏰ <strong>Scheduled:</strong> ${comp.target_time}</span>
         `;
       } else if (comp.state === 'FILLED') {
         detailHtml = `
-          <span class="cd-line">📦 <strong>Loaded:</strong> ${medName} (1 tablet)</span>
+          <span class="cd-line">📦 <strong>Loaded (${medsHere.length}):</strong></span>
+          ${medListHtml}
           <span class="cd-line">⏰ <strong>Scheduled:</strong> ${comp.target_time}</span>
-          <span class="cd-line">🔒 <strong>Safety Lock:</strong> Ready for Jean</span>
         `;
       } else {
         detailHtml = `
-          <span class="cd-line">⚪ <strong>Current:</strong> Empty compartment</span>
-          <span class="cd-line cd-refill-note">📥 <strong>Ready to load:</strong> ${medName}</span>
+          <span class="cd-line">⚪ <strong>Status:</strong> Empty — no medicine loaded</span>
+          <span class="cd-line">⏰ <strong>Scheduled time:</strong> ${comp.target_time}</span>
         `;
       }
 
@@ -1387,6 +1435,7 @@ function renderCompartments() {
             <span class="comp-label">${comp.label}</span>
           </div>
           <span class="comp-state-badge ${badgeClass}">${badgeText}</span>
+          <span class="comp-collapse-chevron" aria-hidden="true">▾</span>
         </div>
         <div class="comp-card-body-row">
           <div class="comp-pill-visual">${pillEmoji}</div>
@@ -1398,6 +1447,11 @@ function renderCompartments() {
         <div class="comp-card-action-row"></div>
       `;
 
+      // click the header row to expand / collapse
+      card.querySelector('.comp-card-top-row').addEventListener('click', () => {
+        card.classList.toggle('collapsed');
+      });
+
       // Caregiver action buttons
       const actionBtn = document.createElement('button');
       actionBtn.className = 'comp-open-btn';
@@ -1405,11 +1459,14 @@ function renderCompartments() {
         actionBtn.textContent = 'Test Open 🔓';
         actionBtn.onclick = () => openCompartmentAction(comp.compartment_index);
       } else if (comp.state === 'TAKEN') {
-        actionBtn.textContent = `Refill ${medName} 📥`;
-        actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, comp.medication_id || defaultMedId);
+        const refillId = comp.medication_id || (scannedMed && scannedMed.id);
+        actionBtn.textContent = refillId ? `Refill ${medName} 📥` : 'Scan a medicine to refill';
+        actionBtn.disabled = !refillId;
+        if (refillId) actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, refillId);
       } else {
-        actionBtn.textContent = `Load ${medName} 📥`;
-        actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, state.currentScan ? state.currentScan.id : defaultMedId);
+        actionBtn.textContent = scannedMed ? `Load ${scannedMed.brand_name} 📥` : 'Scan a medicine to load';
+        actionBtn.disabled = !scannedMed;
+        if (scannedMed) actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, scannedMed.id);
       }
       card.querySelector('.comp-card-action-row').appendChild(actionBtn);
 
@@ -1457,7 +1514,7 @@ function renderCompartments() {
           <div class="cg-refill-details">
             <span>💊 Currently loaded: <strong>${medName} (1 tablet)</strong></span>
             <span>⏰ Scheduled for: <strong>${comp.target_time}</strong> (Patient lock engaged)</span>
-            <span>✅ Status: Ready for Jean's intake</span>
+            <span>✅ Status: Ready for John's intake</span>
           </div>
         `;
       } else {
@@ -1596,42 +1653,6 @@ function createMessageCard(msg, isPatientView) {
   return card;
 }
 
-// Render Sophie's personal message note card on John's simplistic screen
-function renderPatientSophieNote() {
-  const textEl = document.getElementById('patient-sophie-text');
-  const timeEl = document.getElementById('patient-sophie-time');
-  const readBtn = document.getElementById('btn-patient-read-sophie');
-  if (!textEl) return;
-
-  const patientMsgs = (state.messages || []).filter((m) => m.to === 'PATIENT' || m.to === 'ALL');
-  let currentMsgText = 'Hi Dad! Just checking in. Remember to take your pills with water tonight. Love you! ❤️';
-  let currentMsgTime = '7:11 PM';
-
-  if (patientMsgs.length > 0) {
-    const latest = patientMsgs[0];
-    currentMsgText = latest.content;
-    if (latest.timestamp) {
-      try {
-        const d = new Date(latest.timestamp);
-        currentMsgTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      } catch {
-        currentMsgTime = 'Just now';
-      }
-    } else {
-      currentMsgTime = 'Just now';
-    }
-  }
-
-  textEl.textContent = `"${currentMsgText}"`;
-  if (timeEl) timeEl.textContent = currentMsgTime;
-
-  if (readBtn) {
-    readBtn.onclick = () => {
-      speakText(`Personal message from your daughter Sophie: ${currentMsgText}`);
-    };
-  }
-}
-
 // Display AI Explanation in the Companion Panel
 function displayMedicationExplanation(med) {
   if (!med) return;
@@ -1647,7 +1668,7 @@ function displayMedicationExplanation(med) {
 
   let assignedComp = null;
   if (state.pillbox && state.pillbox.compartments) {
-    assignedComp = state.pillbox.compartments.find((c) => c.medication_id === med.id);
+    assignedComp = state.pillbox.compartments.find((c) => compMeds(c).some((m) => m.id === med.id));
   }
 
   if (assignedComp) {
@@ -1713,7 +1734,7 @@ function displayCaregiverScan(med, assignedComp) {
 
   const comp = assignedComp
     || (state.pillbox && state.pillbox.compartments
-      ? state.pillbox.compartments.find((c) => c.medication_id === med.id)
+      ? state.pillbox.compartments.find((c) => compMeds(c).some((m) => m.id === med.id))
       : null);
   const targetIndex = comp ? comp.compartment_index : 2;
 
@@ -1726,7 +1747,71 @@ function displayCaregiverScan(med, assignedComp) {
     dom.btnCgScanLoad.onclick = () => fillCompartmentAction(targetIndex, med.id);
   }
 
+  // Pre-select the suggested slot on the wheel, then draw it
+  state.cgLoaderSelected = comp ? comp.compartment_index : null;
+  renderCgLoader();
+
   dom.cgScanResult.classList.remove('hidden');
+}
+
+// The caregiver's "choose a compartment" wheel: 28 weekly slots, the one at the
+// bottom opening dispenses next. Click a slot (or a time-of-day) then Load.
+function renderCgLoader() {
+  if (!dom.cgLoaderSlots || !state.pillbox || !state.pillbox.compartments) return;
+  const comps = state.pillbox.compartments;
+  const active = currentSlotIndex();
+  const step = 360 / 28;
+  const offset = 180 - (active - 1) * step;   // active slot points down to the opening
+
+  dom.cgLoaderSlots.innerHTML = '';
+  for (let i = 1; i <= 28; i += 1) {
+    const comp = comps.find((c) => c.compartment_index === i);
+    const slot = document.createElement('div');
+    slot.className = 'clw-slot'
+      + (comp && comp.state === 'FILLED' ? ' filled' : '')
+      + (i === active ? ' is-active' : '')
+      + (i === state.cgLoaderSelected ? ' is-pick' : '');
+    slot.style.setProperty('--a', `${(i - 1) * step + offset}deg`);
+    slot.title = comp ? comp.label : `Slot ${i}`;
+    slot.onclick = () => cgLoaderSelect(i);
+    dom.cgLoaderSlots.appendChild(slot);
+  }
+
+  const sel = state.cgLoaderSelected || active;
+  const selComp = comps.find((c) => c.compartment_index === sel);
+  if (dom.cgLoaderHubNum) dom.cgLoaderHubNum.textContent = `#${sel}`;
+  if (dom.cgLoaderHubLabel) dom.cgLoaderHubLabel.textContent = selComp ? selComp.label : `Slot ${sel}`;
+
+  if (dom.cgLoaderPeriods) {
+    const period = ((sel - 1) % 4) + 1;
+    dom.cgLoaderPeriods.querySelectorAll('.clp-btn').forEach((b) => {
+      b.classList.toggle('is-active', state.cgLoaderSelected != null && Number(b.dataset.period) === period);
+    });
+  }
+
+  if (dom.btnCgLoaderLoad) {
+    dom.btnCgLoaderLoad.disabled = state.cgLoaderSelected == null || !state.currentCgScan;
+    dom.btnCgLoaderLoad.textContent = state.cgLoaderSelected
+      ? `📥 Load into Compartment ${state.cgLoaderSelected}`
+      : '📥 Load into this compartment';
+  }
+}
+
+function cgLoaderSelect(idx) {
+  state.cgLoaderSelected = idx;
+  renderCgLoader();
+}
+
+async function cgLoaderLoad() {
+  const idx = state.cgLoaderSelected;
+  const med = state.currentCgScan;
+  if (!idx || !med) return;
+  await fillCompartmentAction(idx, med.id);
+  const comp = state.pillbox?.compartments?.find((c) => c.compartment_index === idx);
+  showToast(`📥 ${med.brand_name} loaded into Compartment ${idx}${comp ? ` (${comp.label})` : ''}.`, 'success');
+  speakText(`${med.brand_name} loaded into compartment ${idx}.`);
+  renderCgLoader();
+  activateTab('tab-cg-pillbox');
 }
 
 // ===================================================================
@@ -1801,6 +1886,10 @@ async function scanBarcode(barcode) {
 
     const data = await res.json();
     displayMedicationExplanation(data.medication);
+    // Keep the caregiver's "choose a compartment" flow in sync with the scan.
+    if (typeof displayCaregiverScan === 'function') {
+      displayCaregiverScan(data.medication, data.assigned_compartment);
+    }
     showToast(`✅ ${data.medication.brand_name} recognized!`, 'success');
   } catch (err) {
     console.error('Scan error:', err);
@@ -1875,7 +1964,7 @@ async function sendCaregiverMessageToPatient() {
       body: JSON.stringify({
         from: 'CAREGIVER',
         to: 'PATIENT',
-        sender_name: 'Sophie (Daughter)',
+        sender_name: 'Sophie (Caregiver)',
         title: 'Reminder from Sophie',
         content: text,
         type: 'REMINDER',
@@ -1883,23 +1972,9 @@ async function sendCaregiverMessageToPatient() {
     });
 
     if (!res.ok) throw new Error('Failed to send');
-    const resData = await res.json();
     dom.inputCgMessage.value = '';
-
-    if (resData.message && !state.messages.some((m) => m.id === resData.message.id)) {
-      state.messages.unshift(resData.message);
-    }
-
     await loadInitialData();
-    renderLockscreenNotifications();
-    renderPatientSophieNote();
-
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: 'refresh_all', reason: 'message_sent' }, '*');
-      window.parent.postMessage({ type: 'new_message_sent', message: resData.message }, '*');
-    }
-
-    showToast('🚀 Special message sent to John!', 'success');
+    showToast('🚀 Message sent successfully to John!', 'success');
   } catch (err) {
     console.error('Send message error:', err);
     showToast('Error sending message', 'alert');
@@ -1929,7 +2004,7 @@ async function resetDemoData() {
     if (state.medications.length > 0) {
       displayMedicationExplanation(state.medications[0]);
     }
-    setSimulatedTime('19:00', false);
+    setSimulatedTime('08:00', false);
     showToast('🔄 Demo restored to initial state!', 'info');
   } catch (err) {
     console.error('Reset error:', err);
@@ -2207,40 +2282,6 @@ function setupEventListeners() {
   if (dom.btnPatientHelpBack) dom.btnPatientHelpBack.addEventListener('click', () => activateTab('tab-patient-today'));
   if (dom.btnPatientInboxLock) dom.btnPatientInboxLock.addEventListener('click', lockPhone);
 
-  // Patient Simplistic Home: Direct Emergency & Contact Actions
-  const btnDirectSophie = document.getElementById('btn-patient-direct-sophie');
-  if (btnDirectSophie) {
-    btnDirectSophie.addEventListener('click', () => {
-      showToast('📞 Calling daughter Sophie (+32 470 12 34 56)...', 'info');
-      speakText('Calling your daughter Sophie now.');
-    });
-  }
-
-  const btnDirectDoctor = document.getElementById('btn-patient-direct-doctor');
-  if (btnDirectDoctor) {
-    btnDirectDoctor.addEventListener('click', () => {
-      showToast('🩺 Calling Dr. Martin (Family Doctor)...', 'info');
-      speakText('Calling Dr. Martin, your family physician.');
-    });
-  }
-
-  const btnDirect112 = document.getElementById('btn-patient-direct-112');
-  if (btnDirect112) {
-    btnDirect112.addEventListener('click', () => {
-      showToast('🚨 Connecting to Emergency Services (112)...', 'alert');
-      speakText('Connecting to Emergency Services 112 immediately.');
-    });
-  }
-
-  const btnReadSophie = document.getElementById('btn-patient-read-sophie');
-  if (btnReadSophie) {
-    btnReadSophie.addEventListener('click', () => {
-      const textEl = document.getElementById('patient-sophie-text');
-      const text = textEl ? textEl.textContent.replace(/^"|"$/g, '') : "Remember to take your pills with water tonight.";
-      speakText(`Personal message from your daughter Sophie: ${text}`);
-    });
-  }
-
   // Scanner Presets, Camera Snap & File Upload
   dom.btnScanDafalgan.addEventListener('click', () => {
     document.querySelectorAll('.scan-preset-btn').forEach((b) => b.classList.remove('active'));
@@ -2295,7 +2336,7 @@ function setupEventListeners() {
 
   // Patient Emergency Calls
   dom.btnPatientCallSophie.addEventListener('click', () => {
-    speakText('Calling daughter Sophie Dupont.');
+    speakText('Calling caregiver Sophie Dupont.');
     alert('📞 Calling Sophie Dupont (+32 470 12 34 56)...');
   });
 
@@ -2327,6 +2368,15 @@ function setupEventListeners() {
   // Caregiver Scanner
   if (dom.btnCgScanDafalgan) dom.btnCgScanDafalgan.addEventListener('click', () => scanForCaregiver('3400930000001'));
   if (dom.btnCgScanLipitor) dom.btnCgScanLipitor.addEventListener('click', () => scanForCaregiver('3400930000002'));
+
+  // Caregiver compartment wheel
+  if (dom.cgLoaderPeriods) {
+    dom.cgLoaderPeriods.addEventListener('click', (e) => {
+      const b = e.target.closest('.clp-btn');
+      if (b) cgLoaderSelect(Number(b.dataset.period));   // period 1-4 = today's slot 1-4
+    });
+  }
+  if (dom.btnCgLoaderLoad) dom.btnCgLoaderLoad.addEventListener('click', cgLoaderLoad);
   if (dom.btnCgCustomScan) dom.btnCgCustomScan.addEventListener('click', () => scanForCaregiver(dom.inputCgBarcode ? dom.inputCgBarcode.value : ''));
   if (dom.inputCgBarcode) {
     dom.inputCgBarcode.addEventListener('keydown', (e) => {
@@ -2343,7 +2393,7 @@ function setupEventListeners() {
 
   // Caregiver Alert Banner Actions
   dom.btnCallPatient.addEventListener('click', () => {
-    alert('📞 Calling Jean Dupont directly (+32 470 99 88 77)...');
+    alert('📞 Calling John Dupont directly (+32 470 99 88 77)...');
   });
 
   dom.btnDismissAlert.addEventListener('click', () => {
@@ -2391,4 +2441,4 @@ window.triggerAlertAction = triggerAlertAction;
 window.loadInitialData = loadInitialData;
 window.renderAll = renderAll;
 window.renderLockscreenNotifications = renderLockscreenNotifications;
-window.renderPatientSophieNote = renderPatientSophieNote;
+
