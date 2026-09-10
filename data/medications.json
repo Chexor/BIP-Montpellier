@@ -26,5 +26,33 @@
     "dosage": "1 tablet",
     "color": "white",
     "shape": "round"
+  },
+  {
+    "id": "med_003",
+    "barcode": "3400930000003",
+    "brand_name": "Asaflow 80mg",
+    "generic_name": "Acetylsalicylzuur",
+    "ai_explanation": {
+      "summary": "Blood thinner to prevent blood clots and protect your heart and blood vessels.",
+      "simple_instructions": "Take 1 tablet daily with a large glass of water, preferably during a meal.",
+      "warnings": "Take with food to protect stomach. Avoid other NSAID pain relievers."
+    },
+    "dosage": "1 tablet",
+    "color": "pink",
+    "shape": "round"
+  },
+  {
+    "id": "med_004",
+    "barcode": "5413787000018",
+    "brand_name": "Amoxicilline 500mg",
+    "generic_name": "Amoxicillin Trihydrate",
+    "ai_explanation": {
+      "summary": "Broad-spectrum antibiotic prescribed to treat bacterial infections.",
+      "simple_instructions": "Take 1 capsule every 8 hours with a full glass of water. Complete the entire course.",
+      "warnings": "Take with meals if stomach upset occurs. Do not stop taking early even if feeling better."
+    },
+    "dosage": "1 capsule",
+    "color": "yellow",
+    "shape": "capsule"
   }
 ]

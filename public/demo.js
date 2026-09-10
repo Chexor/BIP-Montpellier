@@ -29,11 +29,17 @@ function stripChrome(key) {
       '.app-header{display:none!important}' +
       '.app-viewport-wrapper{padding:0!important}' +
       '.toast-container{display:none!important}' +
-      '.smartphone-frame{max-width:none!important}' +
+      '.smartphone-frame{max-width:none!important;position:relative!important}' +
       'body{overflow-x:hidden}' +
-      /* keep the app's own tab bar reachable inside the embed */
-      'body:not(.role-device) .mobile-bottom-nav{display:block!important;position:sticky!important;bottom:0!important;z-index:90}' +
-      'body.mode-desktop-split .phone-content-area{padding-bottom:5rem!important}';
+      /* John's phone is ultra-simplistic: NO bottom menus or tabs */
+      'body.role-patient .mobile-bottom-nav{display:none!important}' +
+      'body.role-patient #nav-patient-tabs{display:none!important}' +
+      'body.role-patient .phone-content-area{padding-bottom:2rem!important}' +
+      /* Caregiver retains full clinical tabs */
+      'body.role-caregiver .mobile-bottom-nav{display:block!important;position:sticky!important;bottom:0!important;z-index:90}' +
+      'body.role-caregiver .phone-content-area{padding-bottom:5rem!important}' +
+      /* Full lockscreen display in demo console embed */
+      '#phone-lockscreen:not(.hidden){display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:100%!important;z-index:99999!important;border-radius:0!important;overflow-y:auto!important;opacity:1!important;transform:none!important;pointer-events:auto!important}';
     d.head.appendChild(st);
   }
 }
@@ -62,7 +68,10 @@ function refreshAll() {
     try {
       const w = frames[key].contentWindow;
       if (typeof w.loadInitialData === 'function') {
-        Promise.resolve(w.loadInitialData()).catch(() => {});
+        Promise.resolve(w.loadInitialData()).then(() => {
+          if (typeof w.renderLockscreenNotifications === 'function') w.renderLockscreenNotifications();
+          if (typeof w.renderPatientSophieNote === 'function') w.renderPatientSophieNote();
+        }).catch(() => {});
       } else if (typeof w.renderAll === 'function') {
         w.renderAll();
       }
@@ -280,6 +289,82 @@ async function resetDemo() {
   markTime('19:00');
   ['a', 'd', 'e'].forEach((p) => document.querySelector('.panel-' + p).classList.remove('is-focus'));
   renderProgress();
+  updateLockUi();
+}
+
+/* ---------- Lockscreen Integration ---------- */
+function isPhoneLocked(key) {
+  try {
+    const w = frames[key]?.contentWindow;
+    return typeof w?.isLocked === 'function' ? w.isLocked() : false;
+  } catch (e) {
+    return false;
+  }
+}
+
+function updateLockUi() {
+  const pLocked = isPhoneLocked('patient');
+  const cgLocked = isPhoneLocked('caregiver');
+
+  const btnP = el('btn-lock-patient');
+  if (btnP) {
+    btnP.classList.toggle('is-locked', pLocked);
+    btnP.innerHTML = pLocked
+      ? '<span class="lock-icon">🔓</span> <span class="lock-text">Unlock Phone</span>'
+      : '<span class="lock-icon">🔒</span> <span class="lock-text">Lockscreen</span>';
+  }
+
+  const btnCg = el('btn-lock-caregiver');
+  if (btnCg) {
+    btnCg.classList.toggle('is-locked', cgLocked);
+    btnCg.innerHTML = cgLocked
+      ? '<span class="lock-icon">🔓</span> <span class="lock-text">Unlock Phone</span>'
+      : '<span class="lock-icon">🔒</span> <span class="lock-text">Lockscreen</span>';
+  }
+
+  const ctlP = el('btn-ctl-lock-patient');
+  if (ctlP) {
+    ctlP.classList.toggle('is-current', pLocked);
+    ctlP.textContent = pLocked ? "🔓 Unlock John's phone" : "🔒 Lock John's phone (view push notifications)";
+  }
+
+  const ctlCg = el('btn-ctl-lock-cg');
+  if (ctlCg) {
+    ctlCg.classList.toggle('is-current', cgLocked);
+    ctlCg.textContent = cgLocked ? "🔓 Unlock Sophie's phone" : "🔒 Lock Sophie's phone (view alerts)";
+  }
+}
+
+function togglePhoneLock(key) {
+  inWin(key, (w) => {
+    if (typeof w.toggleLockscreen === 'function') {
+      w.toggleLockscreen();
+    }
+  });
+  focus(key);
+  setTimeout(updateLockUi, 100);
+
+  setTimeout(() => {
+    const lockedNow = isPhoneLocked(key);
+    if (lockedNow) {
+      if (key === 'patient') {
+        setNarr('LOCKSCREEN', "John's smartphone lockscreen",
+          "Push notifications appear on John's lockscreen for the simulated time. Tap any notification card or the unlock button to enter the app.");
+      } else {
+        setNarr('LOCKSCREEN', "Sophie's caregiver lockscreen",
+          "Sophie receives real-time telemetry notifications, dose confirmations, and urgent alerts directly on her smartphone lockscreen.");
+      }
+    }
+  }, 150);
+}
+
+function unlockAllPhones() {
+  ['patient', 'caregiver'].forEach((key) => {
+    inWin(key, (w) => {
+      if (typeof w.unlockPhone === 'function') w.unlockPhone();
+    });
+  });
+  setTimeout(updateLockUi, 100);
 }
 
 /* ---------- wiring ---------- */
@@ -302,6 +387,27 @@ el('grp-jump').addEventListener('click', (e) => {
   inWin(key, (w) => w.switchRole(ROLE_OF[key]));
   focus(key);
 });
+
+/* Lockscreen controls wiring */
+el('btn-lock-patient')?.addEventListener('click', () => togglePhoneLock('patient'));
+el('btn-lock-caregiver')?.addEventListener('click', () => togglePhoneLock('caregiver'));
+el('btn-ctl-lock-patient')?.addEventListener('click', () => togglePhoneLock('patient'));
+el('btn-ctl-lock-cg')?.addEventListener('click', () => togglePhoneLock('caregiver'));
+el('btn-ctl-unlock-all')?.addEventListener('click', unlockAllPhones);
+
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'phone-lock-changed') {
+    updateLockUi();
+  }
+  if (e.data && (e.data.type === 'refresh_all' || e.data.type === 'new_message_sent')) {
+    refreshAll();
+    setTimeout(refreshAll, 400);
+  }
+});
+
+// Sync lock state on iframe load and time changes
+setInterval(updateLockUi, 1000);
+
 el('btn-reset').addEventListener('click', resetDemo);
 
 document.addEventListener('keydown', (e) => {
@@ -312,3 +418,5 @@ document.addEventListener('keydown', (e) => {
 });
 
 renderProgress();
+updateLockUi();
+

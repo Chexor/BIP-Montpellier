@@ -115,12 +115,22 @@ const dom = {
   btnPatientGotoScan: document.getElementById('btn-patient-goto-scan'),
   btnPatientGotoInbox: document.getElementById('btn-patient-goto-inbox'),
   btnCgGotoScan: document.getElementById('btn-cg-goto-scan'),
+  btnPatientScheduleBack: document.getElementById('btn-patient-schedule-back'),
+  btnPatientInboxBack: document.getElementById('btn-patient-inbox-back'),
+  btnPatientHelpBack: document.getElementById('btn-patient-help-back'),
+  btnPatientInboxLock: document.getElementById('btn-patient-inbox-lock'),
 
   // Scanner & AI Explanation Card
   scannerLaser: document.getElementById('scanner-laser'),
+  scannerTargetBox: document.getElementById('scanner-target-box'),
+  scannerLiveBadge: document.getElementById('scanner-live-badge'),
   webcamVideo: document.getElementById('webcam-video'),
+  btnCameraSnap: document.getElementById('btn-camera-snap'),
   btnScanDafalgan: document.getElementById('btn-scan-dafalgan'),
   btnScanLipitor: document.getElementById('btn-scan-lipitor'),
+  btnScanAsaflow: document.getElementById('btn-scan-asaflow'),
+  btnScanAmoxicillin: document.getElementById('btn-scan-amoxicillin'),
+  inputScanImage: document.getElementById('input-scan-image'),
   inputBarcode: document.getElementById('input-barcode'),
   btnCustomScan: document.getElementById('btn-custom-scan'),
   btnToggleCamera: document.getElementById('btn-toggle-camera'),
@@ -135,6 +145,7 @@ const dom = {
   btnSpeech: document.getElementById('btn-speech'),
   speechBtnLabel: document.getElementById('speech-btn-label'),
   guidanceText: document.getElementById('guidance-text'),
+  selectTargetCompartment: document.getElementById('select-target-compartment'),
   btnQuickFill: document.getElementById('btn-quick-fill'),
 
   // Patient Inbox & Emergency Contacts
@@ -142,6 +153,7 @@ const dom = {
   btnPatientCallSophie: document.getElementById('btn-patient-call-sophie'),
   btnPatientCallDoctor: document.getElementById('btn-patient-call-doctor'),
   btnPatientCallPharmacy: document.getElementById('btn-patient-call-pharmacy'),
+  btnPatientCall112: document.getElementById('btn-patient-call-112'),
 
   // Caregiver Elements
   caregiverAlertBanner: document.getElementById('caregiver-alert-banner'),
@@ -150,6 +162,7 @@ const dom = {
   btnDismissAlert: document.getElementById('btn-dismiss-alert'),
   logsTimeline: document.getElementById('logs-timeline'),
   caregiverCompartmentsList: document.getElementById('caregiver-compartments-list'),
+  cgSummaryTableWrap: document.getElementById('cg-summary-table-wrap'),
   cgLastSyncTime: document.getElementById('cg-last-sync-time'),
   btnCliOpen1: document.getElementById('btn-cli-open-1'),
   btnCliOpen3: document.getElementById('btn-cli-open-3'),
@@ -246,6 +259,12 @@ function lockPhone() {
       : "🔒 Sophie's smartphone locked. Caregiver telemetry & alert notifications visible.",
     'info'
   );
+  window.dispatchEvent(new CustomEvent('phone-lock-changed', { detail: { locked: true, role: state.currentRole } }));
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'phone-lock-changed', role: state.currentRole, locked: true }, '*');
+    }
+  } catch (e) { /* noop */ }
 }
 
 function unlockPhone() {
@@ -254,6 +273,12 @@ function unlockPhone() {
   dom.btnToggleLockscreen.classList.remove('active-locked');
   dom.lockBtnLabel.textContent = 'Lock Phone';
   showToast('🔓 Smartphone unlocked.', 'info');
+  window.dispatchEvent(new CustomEvent('phone-lock-changed', { detail: { locked: false, role: state.currentRole } }));
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'phone-lock-changed', role: state.currentRole, locked: false }, '*');
+    }
+  } catch (e) { /* noop */ }
 }
 
 function toggleLockscreen() {
@@ -841,7 +866,7 @@ function playChime() {
 function switchRole(newRole) {
   state.currentRole = newRole;
 
-  // Toggle role classes on body for distinct calming light theme for Patient vs dark telemetry for Caregiver
+  // Toggle role classes on body for distinct calming light theme for Patient vs clean clinical daylight for Caregiver
   document.body.classList.toggle('role-patient', newRole === 'PATIENT');
   document.body.classList.toggle('role-caregiver', newRole === 'CAREGIVER');
   document.body.classList.toggle('role-device', newRole === 'DEVICE');
@@ -851,30 +876,30 @@ function switchRole(newRole) {
   dom.btnRoleCaregiver.classList.toggle('active', newRole === 'CAREGIVER');
   dom.btnRoleDevice.classList.toggle('active', newRole === 'DEVICE');
 
-  // Update header subtitle
+  // Update header subtitle and role visibility
   if (newRole === 'PATIENT') {
     dom.headerSubtitle.innerHTML = 'Logged in as: <strong>Jean Dupont (Patient)</strong>';
     dom.roleViewPatient.classList.remove('hidden');
     dom.roleViewCaregiver.classList.add('hidden');
     dom.roleViewDevice.classList.add('hidden');
-    dom.navPatientTabs.classList.remove('hidden');
-    dom.navCaregiverTabs.classList.add('hidden');
+    if (dom.navPatientTabs) dom.navPatientTabs.classList.remove('hidden');
+    if (dom.navCaregiverTabs) dom.navCaregiverTabs.classList.add('hidden');
     activateTab('tab-patient-today');
   } else if (newRole === 'CAREGIVER') {
     dom.headerSubtitle.innerHTML = 'Logged in as: <strong>Sophie Dupont (Caregiver)</strong>';
     dom.roleViewPatient.classList.add('hidden');
     dom.roleViewCaregiver.classList.remove('hidden');
     dom.roleViewDevice.classList.add('hidden');
-    dom.navPatientTabs.classList.add('hidden');
-    dom.navCaregiverTabs.classList.remove('hidden');
+    if (dom.navPatientTabs) dom.navPatientTabs.classList.add('hidden');
+    if (dom.navCaregiverTabs) dom.navCaregiverTabs.classList.remove('hidden');
     activateTab('tab-cg-timeline');
   } else {
     dom.headerSubtitle.innerHTML = 'Viewing: <strong>Dosette Pillbox Device</strong>';
     dom.roleViewPatient.classList.add('hidden');
     dom.roleViewCaregiver.classList.add('hidden');
     dom.roleViewDevice.classList.remove('hidden');
-    dom.navPatientTabs.classList.add('hidden');
-    dom.navCaregiverTabs.classList.add('hidden');
+    if (dom.navPatientTabs) dom.navPatientTabs.classList.add('hidden');
+    if (dom.navCaregiverTabs) dom.navCaregiverTabs.classList.add('hidden');
   }
 
   renderAll();
@@ -887,24 +912,46 @@ function switchRole(newRole) {
 function activateTab(tabId) {
   state.activeTab = tabId;
 
-  // Hide all tab pages in current role view
-  const currentView = state.currentRole === 'PATIENT' ? dom.roleViewPatient : dom.roleViewCaregiver;
-  currentView.querySelectorAll('.tab-page').forEach((p) => p.classList.remove('active'));
+  // Patient view tab switching
+  if (state.currentRole === 'PATIENT') {
+    if (dom.roleViewPatient) {
+      dom.roleViewPatient.querySelectorAll('.tab-page').forEach((p) => p.classList.remove('active'));
+    }
+    const targetPage = document.getElementById(tabId);
+    if (targetPage) {
+      targetPage.classList.add('active');
+    }
+    if (dom.navPatientTabs) {
+      dom.navPatientTabs.querySelectorAll('.bottom-tab-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+      });
+    }
+    if (dom.phoneContentArea) {
+      dom.phoneContentArea.scrollTop = 0;
+    }
+    return;
+  }
 
-  // Show target tab page
+  // Caregiver tab switching
+  if (dom.roleViewCaregiver) {
+    dom.roleViewCaregiver.querySelectorAll('.tab-page').forEach((p) => p.classList.remove('active'));
+  }
+
   const targetPage = document.getElementById(tabId);
   if (targetPage) {
     targetPage.classList.add('active');
   }
 
-  // Update bottom navigation active tab button
-  const currentNav = state.currentRole === 'PATIENT' ? dom.navPatientTabs : dom.navCaregiverTabs;
-  currentNav.querySelectorAll('.bottom-tab-btn').forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.tab === tabId);
-  });
+  // Update Caregiver bottom navigation active button
+  if (dom.navCaregiverTabs) {
+    dom.navCaregiverTabs.querySelectorAll('.bottom-tab-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+  }
 
-  // Scroll content to top
-  dom.phoneContentArea.scrollTop = 0;
+  if (dom.phoneContentArea) {
+    dom.phoneContentArea.scrollTop = 0;
+  }
 }
 
 function toggleLayoutMode() {
@@ -1245,13 +1292,18 @@ function renderCompartments() {
     });
   }
 
-  // 2. Render Caregiver View (Full management: refill, place pill, test open, test alert)
+  // 2. Render Caregiver View (Full management: taken history, what was in it, required refills, test open)
   if (dom.caregiverCompartmentsList) {
     dom.caregiverCompartmentsList.innerHTML = '';
 
     comps.forEach((comp) => {
-      const med = state.medications.find((m) => m.id === comp.medication_id);
-      const medName = med ? med.brand_name : (comp.medication_id || 'No medication');
+      const defaultMedId = comp.compartment_index === 1 ? 'med_001' : (comp.compartment_index === 2 ? 'med_003' : 'med_002');
+      const med = state.medications.find((m) => m.id === (comp.medication_id || defaultMedId));
+      const medName = med ? med.brand_name : (comp.medication_id || 'Prescription dose');
+
+      // Find last intake log for this compartment
+      const compLogs = (state.schedule?.intake_logs || []).filter((l) => l.compartment_index === comp.compartment_index);
+      const takenLog = compLogs.filter((l) => l.status === 'TAKEN_ON_TIME' || l.actual_time).slice(-1)[0];
 
       const card = document.createElement('div');
       const stateClass = comp.state === 'FILLED' ? 'state-filled' : (comp.state === 'TAKEN' ? 'state-taken' : 'state-empty');
@@ -1259,49 +1311,61 @@ function renderCompartments() {
 
       card.className = `compartment-card ${stateClass} ${alertClass}`;
 
-      // LED
-      const led = document.createElement('div');
-      led.className = `compartment-led ${comp.led_active ? 'active-alert' : ''}`;
-      led.title = comp.led_active ? 'LED Blinking Red (Alert)' : (comp.state === 'FILLED' ? 'LED Green' : 'LED Off');
-      card.appendChild(led);
-
-      // Header
-      const header = document.createElement('div');
-      header.className = 'comp-header';
-      header.innerHTML = `
-        <span class="comp-index-tag">Box ${comp.compartment_index}</span>
-        <span class="comp-label">${comp.label}</span>
-      `;
-      card.appendChild(header);
-
-      // Pill graphic
-      const lidView = document.createElement('div');
-      lidView.className = 'comp-lid-view';
       let pillEmoji = '💊';
       let badgeText = 'Loaded';
       let badgeClass = 'state-badge-filled';
 
       if (comp.state === 'EMPTY') {
         pillEmoji = '⚪';
-        badgeText = 'Empty';
+        badgeText = 'Needs Refill';
         badgeClass = 'state-badge-empty';
       } else if (comp.state === 'TAKEN') {
         pillEmoji = '✨';
-        badgeText = 'Taken';
+        badgeText = 'Taken Today';
         badgeClass = 'state-badge-taken';
       }
 
-      lidView.innerHTML = `
-        <div class="comp-pill-visual">${pillEmoji}</div>
-        <span class="comp-state-badge ${badgeClass}">${badgeText}</span>
-      `;
-      card.appendChild(lidView);
+      let detailHtml = '';
+      if (comp.state === 'TAKEN') {
+        const timeStr = takenLog?.actual_time
+          ? new Date(takenLog.actual_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : (comp.compartment_index === 1 ? '08:07' : '19:07');
+        detailHtml = `
+          <span class="cd-line">✅ <strong>Taken:</strong> Today at ${timeStr}</span>
+          <span class="cd-line">💊 <strong>Was in box:</strong> ${medName} (1 tablet)</span>
+          <span class="cd-line cd-refill-note">🔄 <strong>Refill needed:</strong> ${medName} for next dose</span>
+        `;
+      } else if (comp.state === 'FILLED') {
+        detailHtml = `
+          <span class="cd-line">📦 <strong>Loaded:</strong> ${medName} (1 tablet)</span>
+          <span class="cd-line">⏰ <strong>Scheduled:</strong> ${comp.target_time}</span>
+          <span class="cd-line">🔒 <strong>Safety Lock:</strong> Ready for Jean</span>
+        `;
+      } else {
+        detailHtml = `
+          <span class="cd-line">⚪ <strong>Current:</strong> Empty compartment</span>
+          <span class="cd-line cd-refill-note">📥 <strong>Ready to load:</strong> ${medName}</span>
+        `;
+      }
 
-      // Med title
-      const medTitle = document.createElement('div');
-      medTitle.className = 'comp-med-name';
-      medTitle.textContent = medName;
-      card.appendChild(medTitle);
+      card.innerHTML = `
+        <div class="comp-card-top-row">
+          <div class="comp-slot-badge-group">
+            <span class="compartment-led ${comp.led_active ? 'active-alert' : ''}" title="${comp.led_active ? 'LED Blinking Red (Alert)' : (comp.state === 'FILLED' ? 'LED Green' : 'LED Off')}"></span>
+            <span class="comp-index-tag">Box ${comp.compartment_index}</span>
+            <span class="comp-label">${comp.label}</span>
+          </div>
+          <span class="comp-state-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="comp-card-body-row">
+          <div class="comp-pill-visual">${pillEmoji}</div>
+          <div class="comp-info-block">
+            <div class="comp-med-name">${medName}</div>
+            <div class="comp-detail-info">${detailHtml}</div>
+          </div>
+        </div>
+        <div class="comp-card-action-row"></div>
+      `;
 
       // Caregiver action buttons
       const actionBtn = document.createElement('button');
@@ -1310,15 +1374,87 @@ function renderCompartments() {
         actionBtn.textContent = 'Test Open 🔓';
         actionBtn.onclick = () => openCompartmentAction(comp.compartment_index);
       } else if (comp.state === 'TAKEN') {
-        actionBtn.textContent = 'Refill 📥';
-        actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, comp.medication_id || 'med_001');
+        actionBtn.textContent = `Refill ${medName} 📥`;
+        actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, comp.medication_id || defaultMedId);
       } else {
-        actionBtn.textContent = 'Load Pill 📥';
-        actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, state.currentScan ? state.currentScan.id : 'med_001');
+        actionBtn.textContent = `Load ${medName} 📥`;
+        actionBtn.onclick = () => fillCompartmentAction(comp.compartment_index, state.currentScan ? state.currentScan.id : defaultMedId);
       }
-      card.appendChild(actionBtn);
+      card.querySelector('.comp-card-action-row').appendChild(actionBtn);
 
       dom.caregiverCompartmentsList.appendChild(card);
+    });
+  }
+
+  // 3. Render Caregiver Pillbox Summary & Refill Audit Card
+  if (dom.cgSummaryTableWrap) {
+    dom.cgSummaryTableWrap.innerHTML = '';
+    comps.forEach((comp) => {
+      const defaultMedId = comp.compartment_index === 1 ? 'med_001' : (comp.compartment_index === 2 ? 'med_003' : 'med_002');
+      const med = state.medications.find((m) => m.id === (comp.medication_id || defaultMedId));
+      const medName = med ? med.brand_name : (comp.medication_id || 'Prescription medication');
+      const compLogs = (state.schedule?.intake_logs || []).filter((l) => l.compartment_index === comp.compartment_index);
+      const takenLog = compLogs.filter((l) => l.status === 'TAKEN_ON_TIME' || l.actual_time).slice(-1)[0];
+
+      const item = document.createElement('div');
+      item.className = `cg-refill-item ${comp.state === 'TAKEN' ? 'refill-taken' : (comp.state === 'EMPTY' ? 'refill-urgent' : '')}`;
+
+      let badgeClass = 'cg-badge-filled';
+      let badgeLabel = '📦 Loaded';
+      if (comp.state === 'TAKEN') {
+        badgeClass = 'cg-badge-taken';
+        badgeLabel = '✅ Taken Today';
+      } else if (comp.state === 'EMPTY') {
+        badgeClass = 'cg-badge-empty';
+        badgeLabel = '⚠️ Needs Refill';
+      }
+
+      let detailHtml = '';
+      if (comp.state === 'TAKEN') {
+        const timeStr = takenLog?.actual_time
+          ? new Date(takenLog.actual_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : (comp.compartment_index === 1 ? '08:07' : '19:07');
+        detailHtml = `
+          <div class="cg-refill-details">
+            <span>🕒 Taken at: <strong>${timeStr}</strong></span>
+            <span>💊 Contained: <strong>${medName} (1 tablet)</strong></span>
+            <span>🔄 Must be refilled with: <strong>${medName}</strong> (for upcoming ${comp.label})</span>
+          </div>
+        `;
+      } else if (comp.state === 'FILLED') {
+        detailHtml = `
+          <div class="cg-refill-details">
+            <span>💊 Currently loaded: <strong>${medName} (1 tablet)</strong></span>
+            <span>⏰ Scheduled for: <strong>${comp.target_time}</strong> (Patient lock engaged)</span>
+            <span>✅ Status: Ready for Jean's intake</span>
+          </div>
+        `;
+      } else {
+        detailHtml = `
+          <div class="cg-refill-details">
+            <span>⚪ Empty compartment (${comp.label})</span>
+            <span>📥 Recommended medication to load: <strong>${medName}</strong></span>
+          </div>
+        `;
+      }
+
+      item.innerHTML = `
+        <div class="cg-refill-item-top">
+          <span class="cg-refill-box-tag">Box #${comp.compartment_index} • ${comp.label}</span>
+          <span class="cg-refill-status-badge ${badgeClass}">${badgeLabel}</span>
+        </div>
+        ${detailHtml}
+        <div class="cg-refill-action-row">
+          ${comp.state === 'TAKEN'
+            ? `<button class="btn-refill-action primary" onclick="fillCompartmentAction(${comp.compartment_index}, '${comp.medication_id || defaultMedId}')">Refill ${medName} 📥</button>`
+            : (comp.state === 'EMPTY'
+                ? `<button class="btn-refill-action primary" onclick="fillCompartmentAction(${comp.compartment_index}, '${defaultMedId}')">Load ${medName} 📥</button>`
+                : `<button class="btn-refill-action secondary" onclick="openCompartmentAction(${comp.compartment_index})">Test Open 🔓</button>`
+              )
+          }
+        </div>
+      `;
+      dom.cgSummaryTableWrap.appendChild(item);
     });
   }
 }
@@ -1486,6 +1622,7 @@ async function scanForCaregiver(barcode) {
       return;
     }
     const data = await res.json();
+    displayMedicationExplanation(data.medication);
     displayCaregiverScan(data.medication, data.assigned_compartment);
     showToast(`✅ ${data.medication.brand_name} recognized`, 'success');
   } catch (err) {
@@ -1720,8 +1857,136 @@ async function resetDemoData() {
 }
 
 // ===================================================================
-// CAMERA / WEBCAM TOGGLE
+// CAMERA / WEBCAM & REAL BARCODE SCANNING
 // ===================================================================
+
+let barcodeDetector = null;
+if ('BarcodeDetector' in window) {
+  try {
+    barcodeDetector = new BarcodeDetector({
+      formats: ['qr_code', 'ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'data_matrix'],
+    });
+  } catch (e) {
+    try { barcodeDetector = new BarcodeDetector(); } catch (_) {}
+  }
+}
+
+let isScanLoopRunning = false;
+function startWebcamScanLoop() {
+  if (isScanLoopRunning) return;
+  isScanLoopRunning = true;
+
+  async function detectFrame() {
+    if (!state.webcamStream || !dom.webcamVideo || dom.webcamVideo.paused || dom.webcamVideo.ended) {
+      isScanLoopRunning = false;
+      return;
+    }
+
+    if (dom.webcamVideo.readyState >= 2 && barcodeDetector) {
+      try {
+        const barcodes = await barcodeDetector.detect(dom.webcamVideo);
+        if (barcodes && barcodes.length > 0) {
+          const raw = barcodes[0].rawValue;
+          if (raw && raw !== state.lastScannedCode) {
+            state.lastScannedCode = raw;
+            flashScannerSuccess(raw);
+            scanBarcode(raw);
+            setTimeout(() => { state.lastScannedCode = null; }, 3500);
+          }
+        }
+      } catch (err) {
+        // detection frame error
+      }
+    }
+
+    if (state.webcamStream) {
+      requestAnimationFrame(detectFrame);
+    } else {
+      isScanLoopRunning = false;
+    }
+  }
+
+  requestAnimationFrame(detectFrame);
+}
+
+function flashScannerSuccess(code) {
+  playChime();
+  if (dom.scannerTargetBox) {
+    dom.scannerTargetBox.classList.add('success-pulse');
+    setTimeout(() => {
+      dom.scannerTargetBox.classList.remove('success-pulse');
+    }, 800);
+  }
+}
+
+async function snapCurrentFrame() {
+  if (!state.webcamStream || !dom.webcamVideo || dom.webcamVideo.readyState < 2) {
+    showToast('Webcam is not ready yet', 'alert');
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = dom.webcamVideo.videoWidth || 640;
+  canvas.height = dom.webcamVideo.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(dom.webcamVideo, 0, 0, canvas.width, canvas.height);
+
+  flashScannerSuccess();
+  showToast('🎯 Frame captured! Scanning package...', 'info');
+
+  if (barcodeDetector) {
+    try {
+      const barcodes = await barcodeDetector.detect(canvas);
+      if (barcodes && barcodes.length > 0) {
+        const code = barcodes[0].rawValue;
+        dom.inputBarcode.value = code;
+        scanBarcode(code);
+        return;
+      }
+    } catch (e) {
+      console.warn('BarcodeDetector frame error:', e);
+    }
+  }
+
+  // Fallback to active barcode or field value
+  const activePreset = document.querySelector('.scan-preset-btn.active');
+  const code = (activePreset && activePreset.dataset.barcode) || dom.inputBarcode.value || '3400930000001';
+  scanBarcode(code);
+}
+
+async function handleImageUpload(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  showToast(`📁 Processing ${file.name}...`, 'info');
+
+  const img = new Image();
+  img.onload = async () => {
+    flashScannerSuccess();
+    if (barcodeDetector) {
+      try {
+        const barcodes = await barcodeDetector.detect(img);
+        if (barcodes && barcodes.length > 0) {
+          const code = barcodes[0].rawValue;
+          dom.inputBarcode.value = code;
+          scanBarcode(code);
+          return;
+        }
+      } catch (err) {
+        console.warn('Detector error on uploaded image:', err);
+      }
+    }
+
+    const filenameCode = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, ' ').trim();
+    if (filenameCode) {
+      dom.inputBarcode.value = filenameCode;
+      scanBarcode(filenameCode);
+    } else {
+      scanBarcode('3400930000001');
+    }
+  };
+  img.src = URL.createObjectURL(file);
+}
 
 async function toggleWebcam() {
   if (state.webcamStream) {
@@ -1729,7 +1994,9 @@ async function toggleWebcam() {
     state.webcamStream = null;
     dom.webcamVideo.srcObject = null;
     dom.webcamVideo.classList.add('hidden');
-    dom.btnToggleCamera.textContent = '📷 Camera';
+    if (dom.btnCameraSnap) dom.btnCameraSnap.classList.add('hidden');
+    if (dom.scannerLiveBadge) dom.scannerLiveBadge.classList.add('hidden');
+    dom.btnToggleCamera.textContent = '📷 Start Live Camera';
     showToast('Camera turned off', 'info');
     return;
   }
@@ -1741,11 +2008,14 @@ async function toggleWebcam() {
     state.webcamStream = stream;
     dom.webcamVideo.srcObject = stream;
     dom.webcamVideo.classList.remove('hidden');
-    dom.btnToggleCamera.textContent = '⏹️ Stop';
-    showToast('Live camera feed activated', 'info');
+    if (dom.btnCameraSnap) dom.btnCameraSnap.classList.remove('hidden');
+    if (dom.scannerLiveBadge) dom.scannerLiveBadge.classList.remove('hidden');
+    dom.btnToggleCamera.textContent = '⏹️ Stop Camera';
+    showToast('Live camera feed activated. Point at any medication packaging!', 'info');
+    startWebcamScanLoop();
   } catch (err) {
     console.warn('Webcam error:', err);
-    showToast('Camera not accessible. Using preset barcodes.', 'alert');
+    showToast('Camera not accessible. You can upload an image or use presets.', 'alert');
   }
 }
 
@@ -1845,23 +2115,57 @@ function setupEventListeners() {
   // Navigation Shortcuts
   if (dom.btnPatientGotoSchedule) dom.btnPatientGotoSchedule.addEventListener('click', () => activateTab('tab-patient-schedule'));
   if (dom.btnPatientGotoScan) dom.btnPatientGotoScan.addEventListener('click', () => activateTab('tab-cg-scan'));
-  if (dom.btnPatientGotoInbox) dom.btnPatientGotoInbox.addEventListener('click', () => activateTab('tab-patient-inbox'));
+  if (dom.btnPatientGotoInbox) dom.btnPatientGotoInbox.addEventListener('click', () => {
+    lockPhone();
+  });
   if (dom.btnCgGotoScan) dom.btnCgGotoScan.addEventListener('click', () => activateTab('tab-cg-scan'));
 
-  // Scanner Presets & Custom
+  // Patient Back Buttons & Lockscreen Shortcuts
+  if (dom.btnPatientScheduleBack) dom.btnPatientScheduleBack.addEventListener('click', () => activateTab('tab-patient-today'));
+  if (dom.btnPatientInboxBack) dom.btnPatientInboxBack.addEventListener('click', () => activateTab('tab-patient-today'));
+  if (dom.btnPatientHelpBack) dom.btnPatientHelpBack.addEventListener('click', () => activateTab('tab-patient-today'));
+  if (dom.btnPatientInboxLock) dom.btnPatientInboxLock.addEventListener('click', lockPhone);
+
+  // Scanner Presets, Camera Snap & File Upload
   dom.btnScanDafalgan.addEventListener('click', () => {
+    document.querySelectorAll('.scan-preset-btn').forEach((b) => b.classList.remove('active'));
     dom.btnScanDafalgan.classList.add('active');
-    dom.btnScanLipitor.classList.remove('active');
     dom.inputBarcode.value = dom.btnScanDafalgan.dataset.barcode;
     scanBarcode(dom.btnScanDafalgan.dataset.barcode);
   });
 
   dom.btnScanLipitor.addEventListener('click', () => {
+    document.querySelectorAll('.scan-preset-btn').forEach((b) => b.classList.remove('active'));
     dom.btnScanLipitor.classList.add('active');
-    dom.btnScanDafalgan.classList.remove('active');
     dom.inputBarcode.value = dom.btnScanLipitor.dataset.barcode;
     scanBarcode(dom.btnScanLipitor.dataset.barcode);
   });
+
+  if (dom.btnScanAsaflow) {
+    dom.btnScanAsaflow.addEventListener('click', () => {
+      document.querySelectorAll('.scan-preset-btn').forEach((b) => b.classList.remove('active'));
+      dom.btnScanAsaflow.classList.add('active');
+      dom.inputBarcode.value = dom.btnScanAsaflow.dataset.barcode;
+      scanBarcode(dom.btnScanAsaflow.dataset.barcode);
+    });
+  }
+
+  if (dom.btnScanAmoxicillin) {
+    dom.btnScanAmoxicillin.addEventListener('click', () => {
+      document.querySelectorAll('.scan-preset-btn').forEach((b) => b.classList.remove('active'));
+      dom.btnScanAmoxicillin.classList.add('active');
+      dom.inputBarcode.value = dom.btnScanAmoxicillin.dataset.barcode;
+      scanBarcode(dom.btnScanAmoxicillin.dataset.barcode);
+    });
+  }
+
+  if (dom.btnCameraSnap) {
+    dom.btnCameraSnap.addEventListener('click', snapCurrentFrame);
+  }
+
+  if (dom.inputScanImage) {
+    dom.inputScanImage.addEventListener('change', handleImageUpload);
+  }
 
   dom.btnCustomScan.addEventListener('click', () => {
     if (dom.inputBarcode.value) scanBarcode(dom.inputBarcode.value);
@@ -1957,3 +2261,19 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 300);
   }, 4200);
 }
+
+// Expose key functions for multi-device demo console & embeds
+window.lockPhone = lockPhone;
+window.unlockPhone = unlockPhone;
+window.toggleLockscreen = toggleLockscreen;
+window.isLocked = () => state.isLocked;
+window.switchRole = switchRole;
+window.activateTab = activateTab;
+window.setSimulatedTime = setSimulatedTime;
+window.openCompartmentAction = openCompartmentAction;
+window.fillCompartmentAction = fillCompartmentAction;
+window.triggerAlertAction = triggerAlertAction;
+window.loadInitialData = loadInitialData;
+window.renderAll = renderAll;
+window.renderLockscreenNotifications = renderLockscreenNotifications;
+
