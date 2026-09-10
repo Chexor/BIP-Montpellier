@@ -494,6 +494,92 @@
             </div>
           </section>
 
+          <!-- TAB: CAREGIVER SCAN & AI EXPLANATION -->
+          <section id="tab-cg-scan" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Medicine Scanner &amp; AI</h2>
+              <p class="page-sub-desc">Scan a package to confirm what it is and which compartment it belongs in before you load it.</p>
+            </div>
+
+            <div class="card scanner-card">
+              <div class="scanner-preview" id="cg-scanner-viewport">
+                <div class="scanner-laser"></div>
+                <div class="scanner-target-box">
+                  <div class="target-corner top-left"></div>
+                  <div class="target-corner top-right"></div>
+                  <div class="target-corner bottom-left"></div>
+                  <div class="target-corner bottom-right"></div>
+                  <div class="target-center-pill">
+                    <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                      <path d="m8.5 8.5 7 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="scanner-tip">Point camera at medicine barcode</div>
+              </div>
+
+              <div class="scan-controls">
+                <div class="quick-scans-label">Simulate instant scan:</div>
+                <div class="quick-scans-buttons">
+                  <button id="btn-cg-scan-dafalgan" class="scan-preset-btn" data-barcode="3400930000001">
+                    <span class="med-name">Dafalgan 1g</span>
+                    <span class="med-meta">Paracetamol (Pain &amp; Fever)</span>
+                  </button>
+                  <button id="btn-cg-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002">
+                    <span class="med-name">Lipitor 20mg</span>
+                    <span class="med-meta">Atorvastatin (Cholesterol)</span>
+                  </button>
+                </div>
+
+                <div class="custom-barcode-row">
+                  <input type="text" id="input-cg-barcode" placeholder="Barcode..." value="3400930000002">
+                  <button id="btn-cg-custom-scan" class="action-btn btn-secondary">Scan</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="cg-scan-result" class="card ai-result-card hidden">
+              <div class="ai-result-header">
+                <div class="med-badge-title">
+                  <span class="pill-color-dot" id="cg-scan-dot"></span>
+                  <div>
+                    <h3 id="cg-scan-name" class="med-brand-name">—</h3>
+                    <span id="cg-scan-generic" class="med-generic-name">—</span>
+                  </div>
+                </div>
+                <button id="btn-cg-scan-speak" class="speech-btn" title="Read explanation aloud">
+                  <span>Read Aloud 🔊</span>
+                </button>
+              </div>
+
+              <div class="plain-language-box">
+                <div class="pl-label">💡 WHAT DOES THIS MEDICINE DO?</div>
+                <p id="cg-scan-summary" class="pl-highlight">—</p>
+              </div>
+
+              <div class="ai-details-grid">
+                <div class="ai-detail-block">
+                  <div class="block-label">How to take:</div>
+                  <p id="cg-scan-instructions">—</p>
+                </div>
+                <div class="ai-detail-block block-warning">
+                  <div class="block-label">Important warning:</div>
+                  <p id="cg-scan-warnings">—</p>
+                </div>
+              </div>
+
+              <div class="sync-guidance-box">
+                <div class="guidance-content">
+                  <span class="guidance-title">Smart Pillbox Location:</span>
+                  <span id="cg-scan-assign" class="guidance-desc">—</span>
+                </div>
+              </div>
+
+              <button id="btn-cg-scan-load" class="action-btn btn-primary">Load into compartment</button>
+            </div>
+          </section>
+
           <!-- TAB: CAREGIVER INBOX & SEND REMINDER -->
           <section id="tab-cg-inbox" class="tab-page">
             <div class="page-title-box">
@@ -637,6 +723,10 @@
           <button class="bottom-tab-btn" data-tab="tab-cg-pillbox">
             <span class="tab-icon">📦</span>
             <span class="tab-label">Pillbox</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-cg-scan">
+            <span class="tab-icon">📷</span>
+            <span class="tab-label">Scan &amp; AI</span>
           </button>
           <button class="bottom-tab-btn tab-with-badge" data-tab="tab-cg-inbox">
             <span class="tab-icon">📬</span>
