@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   loadMedications,
+  saveMedications,
   loadPillboxStatus,
   savePillboxStatus,
   loadScheduleAndLogs,
@@ -178,8 +179,8 @@ const server = http.createServer(async (req, res) => {
       const msg = addInboxMessage({
         from,
         to,
-        sender_name: sender_name || (from === 'CAREGIVER' ? 'Sophie (Mantelzorger)' : 'Jean (Patiënt)'),
-        title: title || (from === 'CAREGIVER' ? 'Herinnering van Sophie' : 'Bericht van Jean'),
+        sender_name: sender_name || (from === 'CAREGIVER' ? 'Sophie (Mantelzorger)' : 'John (Patiënt)'),
+        title: title || (from === 'CAREGIVER' ? 'Herinnering van Sophie' : 'Bericht van John'),
         content,
         type: type || 'REMINDER',
       });
@@ -313,7 +314,7 @@ function resolveMedication(rawBarcode: string, medications: import('../types/ind
     brand_name: `Verified Rx #${shortDigits}`,
     generic_name: `Prescription Medicine (Code: ${clean})`,
     ai_explanation: {
-      summary: 'Verified prescription packaging recognized. Safe to load into Jean’s scheduled pillbox.',
+      summary: 'Verified prescription packaging recognized. Safe to load into John’s scheduled pillbox.',
       simple_instructions: 'Take 1 dose with a glass of water as scheduled by Caregiver Sophie.',
       warnings: 'Store in a cool, dry place. Keep out of reach of children.',
     },
@@ -335,6 +336,12 @@ function resolveMedication(rawBarcode: string, medications: import('../types/ind
 
       const medications = loadMedications();
       const med = resolveMedication(barcode, medications);
+
+      // Persist any newly-recognised medicine so it always renders by name later.
+      if (!medications.some((m) => m.id === med.id)) {
+        medications.push(med);
+        saveMedications(medications);
+      }
 
       const pillbox = loadPillboxStatus();
       const compartment = pillbox.compartments.find((c) => c.medication_id === med.id);
@@ -370,11 +377,18 @@ function resolveMedication(rawBarcode: string, medications: import('../types/ind
       }
 
       const medications = loadMedications();
-      const med = medications.find((m) => m.id === comp.medication_id);
-      const medName = med ? med.brand_name : (comp.medication_id || 'Medicijn');
+      const compMedIds = (comp.medication_ids && comp.medication_ids.length)
+        ? comp.medication_ids
+        : (comp.medication_id ? [comp.medication_id] : []);
+      const compMedNames = compMedIds.map((id) => medications.find((m) => m.id === id)?.brand_name || id);
+      const medName = compMedNames.length > 1
+        ? `${compMedNames.length} tablets (${compMedNames.join(', ')})`
+        : (compMedNames[0] || 'Medicijn');
 
       // Update pillbox
       comp.state = 'TAKEN';
+      comp.medication_ids = [];
+      comp.medication_id = null;
       comp.pills_count = 0;
       comp.led_active = false;
       pillbox.last_synced = new Date().toISOString();

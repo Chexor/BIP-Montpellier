@@ -60,45 +60,92 @@ export const INITIAL_DATA = {
       color: 'white',
       shape: 'round',
     },
+    {
+      id: 'med_003',
+      barcode: '3400930000003',
+      brand_name: 'Asaflow 80mg',
+      generic_name: 'Acetylsalicylic Acid',
+      ai_explanation: {
+        summary: 'A low dose of aspirin that helps prevent blood clots and protects the heart.',
+        simple_instructions: 'Take 1 tablet each morning with food.',
+        warnings: 'Tell your doctor before any surgery or dental work.',
+      },
+      dosage: '1 tablet',
+      color: 'white',
+      shape: 'round',
+    },
+    {
+      id: 'med_004',
+      barcode: '5413787000018',
+      brand_name: 'Amoxicillin 500mg',
+      generic_name: 'Amoxicillin Trihydrate',
+      ai_explanation: {
+        summary: 'A broad-spectrum antibiotic that treats bacterial infections.',
+        simple_instructions: 'Take 1 capsule every 8 hours with water. Finish the whole course.',
+        warnings: 'Keep taking it even if you feel better. Take with food if it upsets your stomach.',
+      },
+      dosage: '1 capsule',
+      color: 'yellow',
+      shape: 'capsule',
+    },
+    {
+      id: 'med_005',
+      barcode: '3400930000005',
+      brand_name: 'Metoprolol 50mg',
+      generic_name: 'Metoprolol Tartrate',
+      ai_explanation: {
+        summary: 'Slows the heart rate and lowers blood pressure to ease strain on the heart.',
+        simple_instructions: 'Take 1 tablet in the evening with food.',
+        warnings: 'Do not stop suddenly. Stand up slowly to avoid dizziness.',
+      },
+      dosage: '1 tablet',
+      color: 'white',
+      shape: 'round',
+    },
   ] as Medication[],
 
   pillbox_status: {
     device_id: 'dosette_box_42',
     battery_level: 88,
     last_synced: '2026-09-08T12:00:00Z',
-    compartments: [
-      {
-        compartment_index: 1,
-        label: 'Morning (08:00)',
-        medication_id: 'med_001',
-        pills_count: 1,
-        state: 'FILLED',
-        target_time: '08:00',
-        led_active: false,
-      },
-      {
-        compartment_index: 2,
-        label: 'Noon (12:30)',
-        medication_id: null,
-        pills_count: 0,
-        state: 'EMPTY',
-        target_time: '12:30',
-        led_active: false,
-      },
-      {
-        compartment_index: 3,
-        label: 'Evening (19:00)',
-        medication_id: 'med_002',
-        pills_count: 1,
-        state: 'FILLED',
-        target_time: '19:00',
-        led_active: false,
-      },
-    ],
+    // 28-compartment weekly organiser: 7 days x 4 periods (Morning/Noon/Evening/Night).
+    // Compartments 1-4 are "Today"; 5-28 are the rest of the week.
+    compartments: ((): PillboxStatus['compartments'] => {
+      const days = ['Today', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'];
+      const periods: Array<[string, string]> = [
+        ['Morning', '08:00'],
+        ['Noon', '12:30'],
+        ['Evening', '19:00'],
+        ['Night', '22:00'],
+      ];
+      // A compartment can hold several medicines. The 19:00 slot (index 3) has four.
+      const preload: Record<number, string[]> = {
+        1: ['med_001'],
+        3: ['med_002', 'med_003', 'med_004', 'med_005'],
+      };
+      const out: PillboxStatus['compartments'] = [];
+      days.forEach((day, di) => {
+        periods.forEach(([period, time], pi) => {
+          const idx = di * 4 + pi + 1;
+          const meds = preload[idx] || [];
+          out.push({
+            compartment_index: idx,
+            label: `${day} · ${period}`,
+            medication_id: meds[0] || null,
+            medication_ids: meds,
+            pills_count: meds.length,
+            state: meds.length ? ('FILLED' as const) : ('EMPTY' as const),
+            target_time: time,
+            led_active: false,
+          });
+        });
+      });
+      return out;
+    })(),
   } as PillboxStatus,
 
   schedule_and_logs: {
-    patient_name: 'Jean Dupont',
+    patient_name: 'John Dupont',
     caregiver_contact: '+32470123456',
     intake_logs: [
       {
@@ -127,9 +174,9 @@ export const INITIAL_DATA = {
       id: 'msg_001',
       from: 'CAREGIVER',
       to: 'PATIENT',
-      sender_name: 'Sophie (Daughter)',
+      sender_name: 'Sophie (Caregiver)',
       title: 'Evening Reminder',
-      content: "Hi Dad, don't forget to take your Lipitor with dinner tonight! I'll visit tomorrow afternoon with the groceries. Love, Sophie ❤️",
+      content: "Hi John, don't forget to take your Lipitor with dinner tonight! I'll visit tomorrow afternoon with the groceries. From Sophie ❤️",
       type: 'REMINDER',
       timestamp: '2026-09-08T11:30:00Z',
       read: false,
@@ -140,7 +187,7 @@ export const INITIAL_DATA = {
       to: 'CAREGIVER',
       sender_name: 'Dosette Smart Pillbox',
       title: 'Morning Dose Taken on Time',
-      content: 'Jean took Dafalgan 1g (Compartment 1) on time at 08:07.',
+      content: 'John took Dafalgan 1g (Compartment 1) on time at 08:07.',
       type: 'CONFIRMATION',
       timestamp: '2026-09-08T08:07:22Z',
       read: true,
@@ -201,10 +248,15 @@ export function fillCompartment(
   }
 
   if (medicationId) {
-    comp.medication_id = medicationId;
+    const list = Array.isArray(comp.medication_ids)
+      ? comp.medication_ids.slice()
+      : (comp.medication_id ? [comp.medication_id] : []);
+    if (!list.includes(medicationId)) list.push(medicationId);
+    comp.medication_ids = list;
+    comp.medication_id = list[0];
   }
   comp.state = 'FILLED';
-  comp.pills_count = pillsCount;
+  comp.pills_count = comp.medication_ids?.length || pillsCount;
   comp.led_active = false;
   pillbox.last_synced = new Date().toISOString();
   savePillboxStatus(pillbox);

@@ -20,7 +20,10 @@ export type CompartmentState = 'FILLED' | 'EMPTY' | 'TAKEN';
 export interface Compartment {
   compartment_index: number;
   label: string;
+  /** primary medicine (first of medication_ids) — kept for backward compatibility */
   medication_id: string | null;
+  /** full list when a compartment holds more than one medicine */
+  medication_ids?: string[];
   pills_count: number;
   state: CompartmentState;
   target_time: string;
