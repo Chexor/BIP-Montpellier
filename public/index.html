@@ -442,290 +442,271 @@
             </div>
           </section>
 
+          <!-- TAB: CAREGIVER SCAN & MEDICATION VERIFICATION -->
           <section id="tab-cg-scan" class="tab-page">
             <div class="page-title-box">
               <h2 class="page-main-heading">Medicine Scanner &amp; AI Assistant 📷</h2>
-              <p class="page-sub-desc">Scan prescription boxes with your camera or barcode to verify dosage and load
-                pills directly into Jean's smart compartments.</p>
+              <p class="page-sub-desc">Scan prescription boxes with your camera or barcode to verify dosage and load pills directly into Jean's smart compartments.</p>
             </div>
 
             <!-- Scanner Viewport Card -->
             <div class="card scanner-card">
               <div class="scanner-preview" id="scanner-viewport">
                 <div class="scanner-laser" id="scanner-laser"></div>
-                <!-- TAB: CAREGIVER SCAN & AI EXPLANATION -->
-                <section id="tab-cg-scan" class="tab-page">
-                  <div class="page-title-box">
-                    <h2 class="page-main-heading">Medicine Scanner &amp; AI</h2>
-                    <p class="page-sub-desc">Scan a package to confirm what it is and which compartment it belongs in
-                      before you load it.</p>
+                <div class="scanner-target-box">
+                  <div class="target-corner top-left"></div>
+                  <div class="target-corner top-right"></div>
+                  <div class="target-corner bottom-left"></div>
+                  <div class="target-corner bottom-right"></div>
+                  <div class="target-center-pill">
+                    <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                      <path d="m8.5 8.5 7 7"></path>
+                    </svg>
                   </div>
-
-                  <div class="card scanner-card">
-                    <div class="scanner-preview" id="cg-scanner-viewport">
-                      <div class="scanner-laser"></div>
-                      <div class="scanner-target-box">
-                        <div class="target-corner top-left"></div>
-                        <div class="target-corner top-right"></div>
-                        <div class="target-corner bottom-left"></div>
-                        <div class="target-corner bottom-right"></div>
-                        <div class="target-center-pill">
-                          <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor"
-                            stroke-width="1.6">
-                            <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
-                            <path d="m8.5 8.5 7 7"></path>
-                          </svg>
-                        </div>
-                      </div>
-                      <<<<<<< HEAD <div class="scanner-tip" id="scanner-tip-text">Point camera at medicine barcode
-                    </div>
-                    <video id="webcam-video" autoplay playsinline class="webcam-video hidden"></video>
-                  </div>
-
-                  <!-- Quick Demo Presets -->
-                  <div class="scan-controls">
-                    <div class="quick-scans-label">Simulate instant packaging scan:</div>
-                    <div class="quick-scans-buttons">
-                      <button id="btn-scan-dafalgan" class="scan-preset-btn active" data-barcode="3400930000001">
-                        <span class="med-name">Dafalgan 1g</span>
-                        <span class="med-meta">Paracetamol (Pain &amp; Fever)</span>
-                      </button>
-                      <button id="btn-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002">
-                        <div class="scanner-tip">Point camera at medicine barcode</div>
-                    </div>
-
-                    <div class="scan-controls">
-                      <div class="quick-scans-label">Simulate instant scan:</div>
-                      <div class="quick-scans-buttons">
-                        <button id="btn-cg-scan-dafalgan" class="scan-preset-btn" data-barcode="3400930000001">
-                          <span class="med-name">Dafalgan 1g</span>
-                          <span class="med-meta">Paracetamol (Pain &amp; Fever)</span>
-                        </button>
-                        <button id="btn-cg-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002">
-                          <span class="med-name">Lipitor 20mg</span>
-                          <span class="med-meta">Atorvastatin (Cholesterol)</span>
-                        </button>
-                      </div>
-
-                      <div class="custom-barcode-row">
-                        <input type="text" id="input-barcode" placeholder="Enter or scan barcode..."
-                          value="3400930000001">
-                        <button id="btn-custom-scan" class="action-btn btn-secondary">Scan</button>
-                        <button id="btn-toggle-camera" class="action-btn btn-outline" title="Toggle camera">📷
-                          Camera</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Plain English AI Begrip Card -->
-                  <div id="ai-result-card" class="card ai-result-card">
-                    <div class="ai-result-header">
-                      <div class="med-badge-title">
-                        <span class="pill-color-dot" id="med-dot"></span>
-                        <div>
-                          <h3 id="med-brand-name" class="med-brand-name">Dafalgan 1g</h3>
-                          <span id="med-generic-name" class="med-generic-name">Paracetamol • 1 tablet (white,
-                            oval)</span>
-                        </div>
-                      </div>
-                      <button id="btn-speech" class="speech-btn" title="Read explanation aloud in clear English">
-                        <span id="speech-btn-label">Read Aloud 🔊</span>
-                      </button>
-                    </div>
-
-                    <!-- Big Plain Language Highlight -->
-                    <div class="plain-language-box">
-                      <div class="pl-label">💡 WHAT DOES THIS MEDICINE DO?</div>
-                      <p id="med-summary" class="pl-highlight">"This is Dafalgan for your headache and fever. Take 1
-                        tablet with water."</p>
-                    </div>
-
-                    <div class="ai-details-grid">
-                      <div class="ai-detail-block">
-                        <div class="block-label">How to take:</div>
-                        <p id="cg-scan-instructions">—</p>
-                      </div>
-                      <div class="ai-detail-block block-warning">
-                        <div class="block-label">Important warning:</div>
-                        <p id="cg-scan-warnings">—</p>
-                      </div>
-                    </div>
-
-                    <div class="sync-guidance-box">
-                      <div class="guidance-content">
-                        <span class="guidance-title">Smart Pillbox Location:</span>
-                        <span id="cg-scan-assign" class="guidance-desc">—</span>
-                      </div>
-                    </div>
-
-                    <button id="btn-cg-scan-load" class="action-btn btn-primary">Load into compartment</button>
-                  </div>
-                </section>
-
-                <!-- TAB: CAREGIVER INBOX & SEND REMINDER -->
-                <section id="tab-cg-inbox" class="tab-page">
-                  <div class="page-title-box">
-                    <h2 class="page-main-heading">Caregiver Messages &amp; Alerts</h2>
-                    <p class="page-sub-desc">Send reminders directly to Jean's phone or view pillbox notifications.
-                    </p>
-                  </div>
-
-                  <!-- Send Reminder to Jean -->
-                  <div class="card send-message-card">
-                    <h3 class="send-title">💬 Send a Reminder to Jean</h3>
-                    <p class="send-desc">This notification appears immediately on Jean's lockscreen and can be read
-                      aloud.</p>
-
-                    <!-- Quick Presets -->
-                    <div class="quick-msg-presets">
-                      <button class="preset-msg-btn"
-                        data-text="Hi Dad, don't forget to take your evening Lipitor with dinner! Love Sophie ❤️">
-                        "Don't forget your evening Lipitor! ❤️"
-                      </button>
-                      <button class="preset-msg-btn"
-                        data-text="I saw you took your morning pill on time, great job Dad! 👍">
-                        "Great job taking your morning pill! 👍"
-                      </button>
-                      <button class="preset-msg-btn"
-                        data-text="I will visit tomorrow around 2 PM with your groceries. See you tomorrow! 🚗">
-                        "I'll visit tomorrow afternoon! 🚗"
-                      </button>
-                    </div>
-
-                    <div class="custom-msg-input-box">
-                      <textarea id="input-cg-message" rows="2"
-                        placeholder="Write a personal note for Jean..."></textarea>
-                      <button id="btn-send-message-to-patient" class="action-btn btn-primary">
-                        Send Reminder 🚀
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Caregiver Notification Log -->
-                  <div class="card">
-                    <h3 class="send-title">Pillbox System Activity</h3>
-                    <div class="inbox-container" id="caregiver-inbox-list">
-                      <!-- Dynamically rendered -->
-                    </div>
-                  </div>
-                </section>
-
-                <!-- TAB: CAREGIVER DOSSIER & SETTINGS -->
-                <section id="tab-cg-settings" class="tab-page">
-                  <div class="page-title-box">
-                    <h2 class="page-main-heading">Patient Profile &amp; Protocol</h2>
-                    <p class="page-sub-desc">Medical configuration and escalation settings for Jean Dupont.</p>
-                  </div>
-
-                  <div class="card dossier-card">
-                    <div class="dossier-row">
-                      <span class="dossier-label">Patient:</span>
-                      <span class="dossier-value">Jean Dupont (82 yrs, Montpellier)</span>
-                    </div>
-                    <div class="dossier-row">
-                      <span class="dossier-label">Primary Caregiver:</span>
-                      <span class="dossier-value">Sophie Dupont (+32 470 12 34 56)</span>
-                    </div>
-                    <div class="dossier-row">
-                      <span class="dossier-label">Assigned Pharmacy:</span>
-                      <span class="dossier-value">De Zwaan Pharmacy (Montpellier)</span>
-                    </div>
-                    <div class="dossier-row">
-                      <span class="dossier-label">Hardware Device:</span>
-                      <span class="dossier-value">dosette_box_42 (Firmware v2.4)</span>
-                    </div>
-                    <div class="dossier-row">
-                      <span class="dossier-label">Escalation Threshold:</span>
-                      <span class="dossier-value">30 minutes delay (SMS &amp; Emergency Banner)</span>
-                    </div>
-                  </div>
-
-                  <div class="caregiver-quick-actions">
-                    <button id="btn-open-terminal-hint" class="cg-action-btn btn-terminal-hint">
-                      💻 View CLI Terminal Commands
-                    </button>
-                  </div>
-                </section>
+                </div>
+                <div class="scanner-tip" id="scanner-tip-text">Point camera at medicine barcode</div>
+                <video id="webcam-video" autoplay playsinline class="webcam-video hidden"></video>
               </div>
 
-              <!-- ===================================================================
-             VIEW 3: PHYSICAL PILLBOX DEVICE
-             =================================================================== -->
-              <div id="role-view-device" class="role-view role-view-device hidden">
-                <section class="device-screen-view">
-                  <div class="device-screen-heading">
-                    <span class="device-screen-kicker">DOSETTE DEVICE</span>
-                    <h2>Smart pillbox</h2>
-                    <p id="device-screen-status">Compartment 3 is positioned at the opening.</p>
-                  </div>
-                  <div class="device-wheel" id="device-wheel" aria-label="Physical circular pillbox dispenser">
-                    <div class="device-wheel-center">
-                      <span id="device-wheel-time">NOW</span>
-                      <strong id="device-wheel-current">#3</strong>
-                    </div>
-                  </div>
-                  <div class="device-dose-screen hidden" id="device-dose-screen" aria-live="polite"></div>
-                  <div class="device-screen-legend">
-                    <span><i class="device-legend-swatch filled"></i>Medication loaded</span>
-                    <span><i class="device-legend-swatch empty"></i>Empty</span>
-                    <span><i class="device-legend-swatch active"></i>Opening</span>
-                  </div>
-                </section>
-              </div>
+              <!-- Quick Demo Presets -->
+              <div class="scan-controls">
+                <div class="quick-scans-label">Simulate instant packaging scan:</div>
+                <div class="quick-scans-buttons">
+                  <button id="btn-scan-dafalgan" class="scan-preset-btn active" data-barcode="3400930000001">
+                    <span class="med-name">Dafalgan 1g</span>
+                    <span class="med-meta">Paracetamol (Pain &amp; Fever)</span>
+                  </button>
+                  <button id="btn-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002">
+                    <span class="med-name">Lipitor 20mg</span>
+                    <span class="med-meta">Atorvastatin (Cholesterol)</span>
+                  </button>
+                  <!-- Compatibility aliases -->
+                  <button id="btn-cg-scan-dafalgan" class="scan-preset-btn" data-barcode="3400930000001" style="display:none"></button>
+                  <button id="btn-cg-scan-lipitor" class="scan-preset-btn" data-barcode="3400930000002" style="display:none"></button>
+                </div>
 
+                <div class="custom-barcode-row">
+                  <input type="text" id="input-barcode" placeholder="Enter or scan barcode..." value="3400930000001">
+                  <input type="hidden" id="input-cg-barcode" value="3400930000001">
+                  <button id="btn-custom-scan" class="action-btn btn-secondary">Scan</button>
+                  <button id="btn-cg-custom-scan" style="display:none"></button>
+                  <button id="btn-toggle-camera" class="action-btn btn-outline" title="Toggle camera">📷 Camera</button>
+                </div>
+              </div>
             </div>
 
-            <!-- Native Mobile Bottom Navigation -->
-            <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-              <!-- Patient Navigation Tabs -->
-              <div class="nav-tabs-group nav-patient-tabs" id="nav-patient-tabs">
-                <button class="bottom-tab-btn active" data-tab="tab-patient-today">
-                  <span class="tab-icon">💊</span>
-                  <span class="tab-label">Today</span>
+            <!-- Plain English AI Begrip Card -->
+            <div id="ai-result-card" class="card ai-result-card">
+              <div class="ai-result-header">
+                <div class="med-badge-title">
+                  <span class="pill-color-dot" id="med-dot"></span>
+                  <span class="pill-color-dot" id="cg-scan-dot" style="display:none"></span>
+                  <div>
+                    <h3 id="med-brand-name" class="med-brand-name">Dafalgan 1g</h3>
+                    <h3 id="cg-scan-name" class="med-brand-name" style="display:none"></h3>
+                    <span id="med-generic-name" class="med-generic-name">Paracetamol • 1 tablet (white, oval)</span>
+                    <span id="cg-scan-generic" class="med-generic-name" style="display:none"></span>
+                  </div>
+                </div>
+                <button id="btn-speech" class="speech-btn" title="Read explanation aloud in clear English">
+                  <span id="speech-btn-label">Read Aloud 🔊</span>
                 </button>
-                <button class="bottom-tab-btn" data-tab="tab-patient-schedule">
-                  <span class="tab-icon">📅</span>
-                  <span class="tab-label">Schedule</span>
+                <button id="btn-cg-scan-speak" style="display:none"></button>
+              </div>
+
+              <!-- Big Plain Language Highlight -->
+              <div class="plain-language-box">
+                <div class="pl-label">💡 WHAT DOES THIS MEDICINE DO?</div>
+                <p id="med-summary" class="pl-highlight">"This is Dafalgan for your headache and fever. Take 1 tablet with water."</p>
+                <p id="cg-scan-summary" style="display:none"></p>
+              </div>
+
+              <div class="ai-details-grid">
+                <div class="ai-detail-block">
+                  <div class="block-label">How to take:</div>
+                  <p id="med-instructions">Take 1 tablet with a large glass of water when in pain. Maximum 3 times per day.</p>
+                  <p id="cg-scan-instructions" style="display:none"></p>
+                </div>
+                <div class="ai-detail-block block-warning">
+                  <div class="block-label">Important warning:</div>
+                  <p id="med-warnings">Do not drink alcohol. Wait at least 4 hours between doses.</p>
+                  <p id="cg-scan-warnings" style="display:none"></p>
+                </div>
+              </div>
+
+              <!-- Pillbox Compartment Hint & Quick Refill Action -->
+              <div id="sync-guidance-box" class="sync-guidance-box">
+                <div class="guidance-content">
+                  <span class="guidance-title">Smart Pillbox Assignment:</span>
+                  <span id="guidance-text" class="guidance-desc">Caregiver assignment: <strong>Compartment 1 (Morning)</strong>.</span>
+                  <span id="cg-scan-assign" style="display:none"></span>
+                </div>
+                <button id="btn-quick-fill" class="btn-quick-fill">Load into Box #1 📥</button>
+                <button id="btn-cg-scan-load" style="display:none"></button>
+              </div>
+            </div>
+
+            <div id="cg-scan-result" style="display:none"></div>
+          </section>
+
+          <!-- TAB: CAREGIVER INBOX & SEND REMINDER -->
+          <section id="tab-cg-inbox" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Caregiver Messages &amp; Alerts</h2>
+              <p class="page-sub-desc">Send reminders directly to Jean's phone or view pillbox notifications.</p>
+            </div>
+
+            <!-- Send Reminder to Jean -->
+            <div class="card send-message-card">
+              <h3 class="send-title">💬 Send a Reminder to Jean</h3>
+              <p class="send-desc">This notification appears immediately on Jean's lockscreen and can be read aloud.</p>
+
+              <!-- Quick Presets -->
+              <div class="quick-msg-presets">
+                <button class="preset-msg-btn" data-text="Hi Dad, don't forget to take your evening Lipitor with dinner! Love Sophie ❤️">
+                  "Don't forget your evening Lipitor! ❤️"
                 </button>
-                <button class="bottom-tab-btn tab-with-badge" data-tab="tab-patient-inbox">
-                  <span class="tab-icon">📬</span>
-                  <span class="tab-badge" id="patient-unread-badge">1</span>
-                  <span class="tab-label">Inbox</span>
+                <button class="preset-msg-btn" data-text="I saw you took your morning pill on time, great job Dad! 👍">
+                  "Great job taking your morning pill! 👍"
                 </button>
-                <button class="bottom-tab-btn" data-tab="tab-patient-help">
-                  <span class="tab-icon">🆘</span>
-                  <span class="tab-label">Help</span>
+                <button class="preset-msg-btn" data-text="I will visit tomorrow around 2 PM with your groceries. See you tomorrow! 🚗">
+                  "I'll visit tomorrow afternoon! 🚗"
                 </button>
               </div>
 
-              <!-- Caregiver Navigation Tabs -->
-              <div class="nav-tabs-group nav-caregiver-tabs hidden" id="nav-caregiver-tabs">
-                <button class="bottom-tab-btn active" data-tab="tab-cg-timeline">
-                  <span class="tab-icon">📊</span>
-                  <span class="tab-label">Adherence</span>
-                </button>
-                <button class="bottom-tab-btn" data-tab="tab-cg-pillbox">
-                  <span class="tab-icon">📦</span>
-                  <span class="tab-label">Pillbox</span>
-                </button>
-                <button class="bottom-tab-btn" data-tab="tab-cg-scan">
-                  <span class="tab-icon">📷</span>
-                  <span class="tab-label">Scan &amp; AI</span>
-                </button>
-                <button class="bottom-tab-btn tab-with-badge" data-tab="tab-cg-inbox">
-                  <span class="tab-icon">📬</span>
-                  <span class="tab-badge" id="cg-unread-badge">0</span>
-                  <span class="tab-label">Care Inbox</span>
-                </button>
-                <button class="bottom-tab-btn" data-tab="tab-cg-settings">
-                  <span class="tab-icon">⚙️</span>
-                  <span class="tab-label">Profile</span>
+              <div class="custom-msg-input-box">
+                <textarea id="input-cg-message" rows="2" placeholder="Write a personal note for Jean..."></textarea>
+                <button id="btn-send-message-to-patient" class="action-btn btn-primary">
+                  Send Reminder 🚀
                 </button>
               </div>
-            </nav>
+            </div>
 
+            <!-- Caregiver Notification Log -->
+            <div class="card">
+              <h3 class="send-title">Pillbox System Activity</h3>
+              <div class="inbox-container" id="caregiver-inbox-list">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB: CAREGIVER DOSSIER & SETTINGS -->
+          <section id="tab-cg-settings" class="tab-page">
+            <div class="page-title-box">
+              <h2 class="page-main-heading">Patient Profile &amp; Protocol</h2>
+              <p class="page-sub-desc">Medical configuration and escalation settings for Jean Dupont.</p>
+            </div>
+
+            <div class="card dossier-card">
+              <div class="dossier-row">
+                <span class="dossier-label">Patient:</span>
+                <span class="dossier-value">Jean Dupont (82 yrs, Montpellier)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Primary Caregiver:</span>
+                <span class="dossier-value">Sophie Dupont (+32 470 12 34 56)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Assigned Pharmacy:</span>
+                <span class="dossier-value">De Zwaan Pharmacy (Montpellier)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Hardware Device:</span>
+                <span class="dossier-value">dosette_box_42 (Firmware v2.4)</span>
+              </div>
+              <div class="dossier-row">
+                <span class="dossier-label">Escalation Threshold:</span>
+                <span class="dossier-value">30 minutes delay (SMS &amp; Emergency Banner)</span>
+              </div>
+            </div>
+
+            <div class="caregiver-quick-actions">
+              <button id="btn-open-terminal-hint" class="cg-action-btn btn-terminal-hint">
+                💻 View CLI Terminal Commands
+              </button>
+            </div>
+          </section>
         </div>
+
+        <!-- ===================================================================
+             VIEW 3: PHYSICAL PILLBOX DEVICE
+             =================================================================== -->
+        <div id="role-view-device" class="role-view role-view-device hidden">
+          <section class="device-screen-view">
+            <div class="device-screen-heading">
+              <span class="device-screen-kicker">DOSETTE DEVICE</span>
+              <h2>Smart pillbox</h2>
+              <p id="device-screen-status">Compartment 3 is positioned at the opening.</p>
+            </div>
+            <div class="device-wheel" id="device-wheel" aria-label="Physical circular pillbox dispenser">
+              <div class="device-wheel-center">
+                <span id="device-wheel-time">NOW</span>
+                <strong id="device-wheel-current">#3</strong>
+              </div>
+            </div>
+            <div class="device-dose-screen hidden" id="device-dose-screen" aria-live="polite"></div>
+            <div class="device-screen-legend">
+              <span><i class="device-legend-swatch filled"></i>Medication loaded</span>
+              <span><i class="device-legend-swatch empty"></i>Empty</span>
+              <span><i class="device-legend-swatch active"></i>Opening</span>
+            </div>
+          </section>
+        </div>
+
       </div>
+
+      <!-- Native Mobile Bottom Navigation -->
+      <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <!-- Patient Navigation Tabs -->
+        <div class="nav-tabs-group nav-patient-tabs" id="nav-patient-tabs">
+          <button class="bottom-tab-btn active" data-tab="tab-patient-today">
+            <span class="tab-icon">💊</span>
+            <span class="tab-label">Today</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-patient-schedule">
+            <span class="tab-icon">📅</span>
+            <span class="tab-label">Schedule</span>
+          </button>
+          <button class="bottom-tab-btn tab-with-badge" data-tab="tab-patient-inbox">
+            <span class="tab-icon">📬</span>
+            <span class="tab-badge" id="patient-unread-badge">1</span>
+            <span class="tab-label">Inbox</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-patient-help">
+            <span class="tab-icon">🆘</span>
+            <span class="tab-label">Help</span>
+          </button>
+        </div>
+
+        <!-- Caregiver Navigation Tabs -->
+        <div class="nav-tabs-group nav-caregiver-tabs hidden" id="nav-caregiver-tabs">
+          <button class="bottom-tab-btn active" data-tab="tab-cg-timeline">
+            <span class="tab-icon">📊</span>
+            <span class="tab-label">Adherence</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-cg-pillbox">
+            <span class="tab-icon">📦</span>
+            <span class="tab-label">Pillbox</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-cg-scan">
+            <span class="tab-icon">📷</span>
+            <span class="tab-label">Scan &amp; AI</span>
+          </button>
+          <button class="bottom-tab-btn tab-with-badge" data-tab="tab-cg-inbox">
+            <span class="tab-icon">📬</span>
+            <span class="tab-badge" id="cg-unread-badge">0</span>
+            <span class="tab-label">Care Inbox</span>
+          </button>
+          <button class="bottom-tab-btn" data-tab="tab-cg-settings">
+            <span class="tab-icon">⚙️</span>
+            <span class="tab-label">Profile</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
 
       <!-- CLI Terminal Reference Modal -->
       <div id="terminal-modal" class="modal-backdrop hidden">
