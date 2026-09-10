@@ -1,5 +1,16 @@
 [
   {
+    "id": "msg_1789033039194_278",
+    "from": "CAREGIVER",
+    "to": "PATIENT",
+    "sender_name": "Sophie (Daughter)",
+    "title": "Special Reminder from Sophie",
+    "content": "Hey Papa, vergeet niet een glaasje water te drinken bij je medicijnen! Kusjes, Sophie ❤️",
+    "type": "REMINDER",
+    "timestamp": "2026-09-10T09:37:19.194Z",
+    "read": false
+  },
+  {
     "id": "msg_1789032418392_849",
     "from": "CAREGIVER",
     "to": "PATIENT",

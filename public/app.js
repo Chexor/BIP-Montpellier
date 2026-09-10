@@ -473,185 +473,214 @@ function renderSpotlightCard() {
 function getRoleNotifications(role, timeStr) {
   const comp3 = state.pillbox?.compartments?.find((c) => c.compartment_index === 3);
   const isComp3Taken = comp3 && comp3.state === 'TAKEN';
+  const notifs = [];
 
   if (role === 'PATIENT') {
-    if (isComp3Taken && (timeStr === '19:00' || timeStr === '19:10' || timeStr === '19:35')) {
-      return [
-        {
-          id: 'notif-p-taken',
-          app: '✅ Dosette Pillbox',
-          title: 'Evening Dose Completed',
-          body: 'You took your Lipitor 20mg on time. All doses are completed for today!',
-          time: timeStr,
-          urgent: false,
-          targetTab: 'tab-patient-today',
-        },
-      ];
-    }
+    // 1. Special & Custom Messages sent from Sophie / Caregiver (ALWAYS on John's Lockscreen!)
+    const patientMsgs = (state.messages || []).filter((m) => m.to === 'PATIENT' || m.to === 'ALL');
+    patientMsgs.forEach((msg) => {
+      let timeFormatted = 'Just now';
+      if (msg.timestamp) {
+        try {
+          const d = new Date(msg.timestamp);
+          timeFormatted = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+          timeFormatted = 'Recent';
+        }
+      }
+      notifs.push({
+        id: `msg-${msg.id}`,
+        app: '💬 Sophie (Daughter)',
+        title: msg.title || 'Personal Message from Sophie',
+        body: msg.content,
+        time: timeFormatted,
+        urgent: msg.type === 'ALERT' || (msg.title && msg.title.toLowerCase().includes('urgent')),
+        targetTab: 'tab-patient-today',
+        isMessage: true,
+        messageId: msg.id,
+      });
+    });
 
-    if (timeStr === '08:00') {
-      return [
-        {
-          id: 'notif-p-0800',
-          app: '💊 Dosette Pillbox',
-          title: 'Morning Dose: Dafalgan 1g',
-          body: 'Good morning Jean! Time for your morning dose (08:00). Compartment 1 is unlocked and glowing green.',
-          time: '08:00 AM',
-          urgent: false,
-          targetTab: 'tab-patient-today',
-          compIndex: 1,
-        },
-      ];
+    // 2. Pillbox Intakes & Scheduled Reminders
+    if (isComp3Taken && (timeStr === '19:00' || timeStr === '19:10' || timeStr === '19:35')) {
+      notifs.push({
+        id: 'notif-p-taken',
+        app: '✅ Dosette Pillbox',
+        title: 'Evening Dose Completed',
+        body: 'You took your Lipitor 20mg on time. All doses are completed for today!',
+        time: timeStr,
+        urgent: false,
+        targetTab: 'tab-patient-today',
+      });
+    } else if (timeStr === '08:00') {
+      notifs.push({
+        id: 'notif-p-0800',
+        app: '💊 Dosette Pillbox',
+        title: 'Morning Dose: Dafalgan 1g',
+        body: 'Good morning Jean! Time for your morning dose (08:00). Compartment 1 is unlocked and glowing green.',
+        time: '08:00 AM',
+        urgent: false,
+        targetTab: 'tab-patient-today',
+        compIndex: 1,
+      });
     } else if (timeStr === '12:30') {
-      return [
-        {
-          id: 'notif-p-1230',
-          app: '💊 Dosette Pillbox',
-          title: 'Lunch Status: All Caught Up',
-          body: 'No medication scheduled for lunch. Enjoy your meal! Next dose at 19:00.',
-          time: '12:30 PM',
-          urgent: false,
-          targetTab: 'tab-patient-today',
-        },
-      ];
+      notifs.push({
+        id: 'notif-p-1230',
+        app: '💊 Dosette Pillbox',
+        title: 'Lunch Status: All Caught Up',
+        body: 'No medication scheduled for lunch. Enjoy your meal! Next dose at 19:00.',
+        time: '12:30 PM',
+        urgent: false,
+        targetTab: 'tab-patient-today',
+      });
     } else if (timeStr === '19:00') {
-      return [
-        {
-          id: 'notif-p-1900',
-          app: '💊 Dosette Pillbox',
-          title: 'Evening Dose: Lipitor 20mg',
-          body: 'Time for your evening dose (19:00). Compartment 3 is illuminated and ready for you.',
-          time: '7:00 PM',
-          urgent: false,
-          targetTab: 'tab-patient-today',
-          compIndex: 3,
-        },
-      ];
+      notifs.push({
+        id: 'notif-p-1900',
+        app: '💊 Dosette Pillbox',
+        title: 'Evening Dose: Lipitor 20mg',
+        body: 'Time for your evening dose (19:00). Compartment 3 is illuminated and ready for you.',
+        time: '7:00 PM',
+        urgent: false,
+        targetTab: 'tab-patient-today',
+        compIndex: 3,
+      });
     } else if (timeStr === '19:10') {
-      return [
-        {
-          id: 'notif-p-1910',
-          app: '💊 Dosette Pillbox',
-          title: 'Friendly Reminder: Lipitor 20mg',
-          body: 'A few minutes late is completely normal. Compartment 3 is glowing green when you are ready.',
-          time: '7:10 PM',
-          urgent: false,
-          targetTab: 'tab-patient-today',
-          compIndex: 3,
-        },
-        {
+      notifs.push({
+        id: 'notif-p-1910',
+        app: '💊 Dosette Pillbox',
+        title: 'Friendly Reminder: Lipitor 20mg',
+        body: 'A few minutes late is completely normal. Compartment 3 is glowing green when you are ready.',
+        time: '7:10 PM',
+        urgent: false,
+        targetTab: 'tab-patient-today',
+        compIndex: 3,
+      });
+      if (patientMsgs.length === 0) {
+        notifs.push({
           id: 'notif-p-msg',
           app: '💬 Sophie (Daughter)',
           title: 'Sophie Dupont',
           body: 'Hi Dad! Just checking in after dinner. Did you remember your Lipitor? ❤️',
           time: '7:11 PM',
           urgent: false,
-          targetTab: 'tab-patient-inbox',
-        },
-      ];
-    } else if (timeStr === '19:35') {
-      return [
-        {
-          id: 'notif-p-1935',
-          app: '🚨 DOSETTE ALERT',
-          title: 'URGENT: Missed Dose (Lipitor 20mg)',
-          body: 'Evening dose is 35m overdue! Compartment 3 LED is blinking red. Tap to take medication.',
-          time: '7:35 PM',
-          urgent: true,
           targetTab: 'tab-patient-today',
-          compIndex: 3,
-        },
-        {
+        });
+      }
+    } else if (timeStr === '19:35') {
+      notifs.push({
+        id: 'notif-p-1935',
+        app: '🚨 DOSETTE ALERT',
+        title: 'URGENT: Missed Dose (Lipitor 20mg)',
+        body: 'Evening dose is 35m overdue! Compartment 3 LED is blinking red. Tap to take medication.',
+        time: '7:35 PM',
+        urgent: true,
+        targetTab: 'tab-patient-today',
+        compIndex: 3,
+      });
+      if (patientMsgs.length === 0) {
+        notifs.push({
           id: 'notif-p-msg-urgent',
           app: '💬 Sophie (Daughter)',
           title: 'Urgent Message from Sophie',
           body: 'Dad, I got an alert on my phone that you missed your 19:00 Lipitor. Are you okay? Call me if needed!',
           time: '7:36 PM',
           urgent: true,
-          targetTab: 'tab-patient-inbox',
-        },
-      ];
+          targetTab: 'tab-patient-today',
+        });
+      }
     }
+    return notifs;
   } else {
-    // Caregiver (Sophie) receives telemetry confirmations, compliance metrics, and escalation alerts
+    // Caregiver (Sophie) receives telemetry confirmations, compliance metrics, and incoming patient messages
+    const cgMsgs = (state.messages || []).filter((m) => m.to === 'CAREGIVER');
+    cgMsgs.forEach((msg) => {
+      let timeFormatted = 'Just now';
+      if (msg.timestamp) {
+        try {
+          const d = new Date(msg.timestamp);
+          timeFormatted = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+          timeFormatted = 'Recent';
+        }
+      }
+      notifs.push({
+        id: `msg-${msg.id}`,
+        app: '💬 Jean (Patient)',
+        title: msg.title || 'Message from Jean',
+        body: msg.content,
+        time: timeFormatted,
+        urgent: false,
+        targetTab: 'tab-cg-inbox',
+      });
+    });
+
     if (isComp3Taken && (timeStr === '19:00' || timeStr === '19:10' || timeStr === '19:35')) {
-      return [
-        {
-          id: 'notif-cg-taken',
-          app: '✅ Adherence Confirmed',
-          title: 'Intake Confirmed: Jean Dupont',
-          body: `Jean took Lipitor 20mg at ${timeStr} successfully. Daily compliance: 100%.`,
-          time: timeStr,
-          urgent: false,
-          targetTab: 'tab-cg-timeline',
-        },
-      ];
+      notifs.push({
+        id: 'notif-cg-taken',
+        app: '✅ Adherence Confirmed',
+        title: 'Intake Confirmed: Jean Dupont',
+        body: `Jean took Lipitor 20mg at ${timeStr} successfully. Daily compliance: 100%.`,
+        time: timeStr,
+        urgent: false,
+        targetTab: 'tab-cg-timeline',
+      });
+      return notifs;
     }
 
     if (timeStr === '08:00') {
-      return [
-        {
-          id: 'notif-cg-0800',
-          app: '📊 Caregiver Telemetry',
-          title: 'Dose Due: Jean Dupont',
-          body: "Jean's 08:00 Morning Dafalgan 1g is due. Pillbox status: Connected 🟢 (Battery 88%).",
-          time: '08:00 AM',
-          urgent: false,
-          targetTab: 'tab-cg-timeline',
-        },
-      ];
+      notifs.push({
+        id: 'notif-cg-0800',
+        app: '📊 Caregiver Telemetry',
+        title: 'Dose Due: Jean Dupont',
+        body: "Jean's 08:00 Morning Dafalgan 1g is due. Pillbox status: Connected 🟢 (Battery 88%).",
+        time: '08:00 AM',
+        urgent: false,
+        targetTab: 'tab-cg-timeline',
+      });
     } else if (timeStr === '12:30') {
-      return [
-        {
-          id: 'notif-cg-1230',
-          app: '✅ Adherence Confirmation',
-          title: 'Intake Confirmed: Jean Dupont',
-          body: 'Jean took Dafalgan 1g at 08:02 on time. Compliance today: 100%. Next dose: 19:00.',
-          time: '12:30 PM',
-          urgent: false,
-          targetTab: 'tab-cg-timeline',
-        },
-      ];
+      notifs.push({
+        id: 'notif-cg-1230',
+        app: '✅ Adherence Confirmation',
+        title: 'Intake Confirmed: Jean Dupont',
+        body: 'Jean took Dafalgan 1g at 08:02 on time. Compliance today: 100%. Next dose: 19:00.',
+        time: '12:30 PM',
+        urgent: false,
+        targetTab: 'tab-cg-timeline',
+      });
     } else if (timeStr === '19:00') {
-      return [
-        {
-          id: 'notif-cg-1900',
-          app: '📦 Pillbox Telemetry',
-          title: 'Evening Dose Unlocked: Jean Dupont',
-          body: "Compartment 3 (Lipitor 20mg) unlocked on Jean's smart pillbox. Awaiting sensor confirmation.",
-          time: '7:00 PM',
-          urgent: false,
-          targetTab: 'tab-cg-timeline',
-        },
-      ];
+      notifs.push({
+        id: 'notif-cg-1900',
+        app: '📦 Pillbox Telemetry',
+        title: 'Evening Dose Unlocked: Jean Dupont',
+        body: "Compartment 3 (Lipitor 20mg) unlocked on Jean's smart pillbox. Awaiting sensor confirmation.",
+        time: '7:00 PM',
+        urgent: false,
+        targetTab: 'tab-cg-timeline',
+      });
     } else if (timeStr === '19:10') {
-      return [
-        {
-          id: 'notif-cg-1910',
-          app: '⏳ Follow-Up Dispatched',
-          title: '10m Elapsed: Jean Dupont',
-          body: 'Jean has not opened Box 3 yet (10m late). Automatic gentle reminder dispatched to his phone.',
-          time: '7:10 PM',
-          urgent: false,
-          targetTab: 'tab-cg-timeline',
-        },
-      ];
+      notifs.push({
+        id: 'notif-cg-1910',
+        app: '⏳ Follow-Up Dispatched',
+        title: '10m Elapsed: Jean Dupont',
+        body: 'Jean has not opened Box 3 yet (10m late). Automatic gentle reminder dispatched to his phone.',
+        time: '7:10 PM',
+        urgent: false,
+        targetTab: 'tab-cg-timeline',
+      });
     } else if (timeStr === '19:35') {
-      return [
-        {
-          id: 'notif-cg-1935',
-          app: '🚨 CRITICAL ESCALATION',
-          title: 'MISSED DOSE ALERT: Jean Dupont',
-          body: 'Jean has not taken 19:00 Lipitor after 35 minutes! Pillbox LED blinking red. Tap to call patient.',
-          time: '7:35 PM',
-          urgent: true,
-          targetTab: 'tab-cg-timeline',
-        },
-      ];
+      notifs.push({
+        id: 'notif-cg-1935',
+        app: '🚨 CRITICAL ESCALATION',
+        title: 'MISSED DOSE ALERT: Jean Dupont',
+        body: 'Jean has not taken 19:00 Lipitor after 35 minutes! Pillbox LED blinking red. Tap to call patient.',
+        time: '7:35 PM',
+        urgent: true,
+        targetTab: 'tab-cg-timeline',
+      });
     }
-  }
 
-  return [];
+    return notifs;
+  }
 }
 
 // Render lockscreen push notification cards
@@ -817,6 +846,7 @@ function handleLiveEvent(data) {
       state.messages.unshift(newMsg);
       playChime();
       renderLockscreenNotifications();
+      renderPatientSophieNote();
 
       if (newMsg.to === state.currentRole) {
         showToast(`📬 New message from ${newMsg.sender_name}: "${newMsg.title}"`, 'info');
@@ -882,7 +912,7 @@ function switchRole(newRole) {
     dom.roleViewPatient.classList.remove('hidden');
     dom.roleViewCaregiver.classList.add('hidden');
     dom.roleViewDevice.classList.add('hidden');
-    if (dom.navPatientTabs) dom.navPatientTabs.classList.remove('hidden');
+    if (dom.navPatientTabs) dom.navPatientTabs.classList.add('hidden');
     if (dom.navCaregiverTabs) dom.navCaregiverTabs.classList.add('hidden');
     activateTab('tab-patient-today');
   } else if (newRole === 'CAREGIVER') {
@@ -983,6 +1013,7 @@ function renderAll() {
   renderPatientSchedule();
   renderSpotlightCard();
   renderLockscreenNotifications();
+  renderPatientSophieNote();
 }
 
 function renderDeviceWheel() {
@@ -1565,6 +1596,42 @@ function createMessageCard(msg, isPatientView) {
   return card;
 }
 
+// Render Sophie's personal message note card on John's simplistic screen
+function renderPatientSophieNote() {
+  const textEl = document.getElementById('patient-sophie-text');
+  const timeEl = document.getElementById('patient-sophie-time');
+  const readBtn = document.getElementById('btn-patient-read-sophie');
+  if (!textEl) return;
+
+  const patientMsgs = (state.messages || []).filter((m) => m.to === 'PATIENT' || m.to === 'ALL');
+  let currentMsgText = 'Hi Dad! Just checking in. Remember to take your pills with water tonight. Love you! ❤️';
+  let currentMsgTime = '7:11 PM';
+
+  if (patientMsgs.length > 0) {
+    const latest = patientMsgs[0];
+    currentMsgText = latest.content;
+    if (latest.timestamp) {
+      try {
+        const d = new Date(latest.timestamp);
+        currentMsgTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        currentMsgTime = 'Just now';
+      }
+    } else {
+      currentMsgTime = 'Just now';
+    }
+  }
+
+  textEl.textContent = `"${currentMsgText}"`;
+  if (timeEl) timeEl.textContent = currentMsgTime;
+
+  if (readBtn) {
+    readBtn.onclick = () => {
+      speakText(`Personal message from your daughter Sophie: ${currentMsgText}`);
+    };
+  }
+}
+
 // Display AI Explanation in the Companion Panel
 function displayMedicationExplanation(med) {
   if (!med) return;
@@ -1816,9 +1883,23 @@ async function sendCaregiverMessageToPatient() {
     });
 
     if (!res.ok) throw new Error('Failed to send');
+    const resData = await res.json();
     dom.inputCgMessage.value = '';
+
+    if (resData.message && !state.messages.some((m) => m.id === resData.message.id)) {
+      state.messages.unshift(resData.message);
+    }
+
     await loadInitialData();
-    showToast('🚀 Message sent successfully to Jean!', 'success');
+    renderLockscreenNotifications();
+    renderPatientSophieNote();
+
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'refresh_all', reason: 'message_sent' }, '*');
+      window.parent.postMessage({ type: 'new_message_sent', message: resData.message }, '*');
+    }
+
+    showToast('🚀 Special message sent to John!', 'success');
   } catch (err) {
     console.error('Send message error:', err);
     showToast('Error sending message', 'alert');
@@ -2126,6 +2207,40 @@ function setupEventListeners() {
   if (dom.btnPatientHelpBack) dom.btnPatientHelpBack.addEventListener('click', () => activateTab('tab-patient-today'));
   if (dom.btnPatientInboxLock) dom.btnPatientInboxLock.addEventListener('click', lockPhone);
 
+  // Patient Simplistic Home: Direct Emergency & Contact Actions
+  const btnDirectSophie = document.getElementById('btn-patient-direct-sophie');
+  if (btnDirectSophie) {
+    btnDirectSophie.addEventListener('click', () => {
+      showToast('📞 Calling daughter Sophie (+32 470 12 34 56)...', 'info');
+      speakText('Calling your daughter Sophie now.');
+    });
+  }
+
+  const btnDirectDoctor = document.getElementById('btn-patient-direct-doctor');
+  if (btnDirectDoctor) {
+    btnDirectDoctor.addEventListener('click', () => {
+      showToast('🩺 Calling Dr. Martin (Family Doctor)...', 'info');
+      speakText('Calling Dr. Martin, your family physician.');
+    });
+  }
+
+  const btnDirect112 = document.getElementById('btn-patient-direct-112');
+  if (btnDirect112) {
+    btnDirect112.addEventListener('click', () => {
+      showToast('🚨 Connecting to Emergency Services (112)...', 'alert');
+      speakText('Connecting to Emergency Services 112 immediately.');
+    });
+  }
+
+  const btnReadSophie = document.getElementById('btn-patient-read-sophie');
+  if (btnReadSophie) {
+    btnReadSophie.addEventListener('click', () => {
+      const textEl = document.getElementById('patient-sophie-text');
+      const text = textEl ? textEl.textContent.replace(/^"|"$/g, '') : "Remember to take your pills with water tonight.";
+      speakText(`Personal message from your daughter Sophie: ${text}`);
+    });
+  }
+
   // Scanner Presets, Camera Snap & File Upload
   dom.btnScanDafalgan.addEventListener('click', () => {
     document.querySelectorAll('.scan-preset-btn').forEach((b) => b.classList.remove('active'));
@@ -2276,4 +2391,4 @@ window.triggerAlertAction = triggerAlertAction;
 window.loadInitialData = loadInitialData;
 window.renderAll = renderAll;
 window.renderLockscreenNotifications = renderLockscreenNotifications;
-
+window.renderPatientSophieNote = renderPatientSophieNote;
