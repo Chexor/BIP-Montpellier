@@ -19,6 +19,8 @@ const state = {
   messages: [],
   currentScan: null,
   isSpeaking: false,
+  pocketAudio: null,
+  isPocketTtsPlaying: false,
   webcamStream: null,
   deviceDosePreview: false,
   deviceDosePreviewTimer: null,
@@ -144,6 +146,8 @@ const dom = {
   medSummary: document.getElementById('med-summary'),
   medInstructions: document.getElementById('med-instructions'),
   medWarnings: document.getElementById('med-warnings'),
+  btnPocketTts: document.getElementById('btn-pocket-tts'),
+  pocketTtsBtnLabel: document.getElementById('pocket-tts-btn-label'),
   btnSpeech: document.getElementById('btn-speech'),
   speechBtnLabel: document.getElementById('speech-btn-label'),
   guidanceText: document.getElementById('guidance-text'),
@@ -1906,12 +1910,69 @@ async function cgLoaderLoad() {
 // TEXT-TO-SPEECH (SPEECH SYNTHESIS - ENGLISH)
 // ===================================================================
 
+const pocketTtsClips = {
+  dosiIntro: '/assets/audio/dosi_intro_mary_cheerful.wav',
+};
+
+function resetPocketTtsUi() {
+  state.isPocketTtsPlaying = false;
+  if (dom.btnPocketTts) dom.btnPocketTts.classList.remove('speaking');
+  if (dom.pocketTtsBtnLabel) dom.pocketTtsBtnLabel.textContent = 'Dosi Voice ▶';
+}
+
+function stopPocketTts() {
+  if (!state.pocketAudio) return;
+  state.pocketAudio.pause();
+  state.pocketAudio.currentTime = 0;
+  resetPocketTtsUi();
+}
+
+function playPocketTtsClip(clipName = 'dosiIntro') {
+  const clipPath = pocketTtsClips[clipName];
+  if (!clipPath) return false;
+
+  if (state.isPocketTtsPlaying) {
+    stopPocketTts();
+    return true;
+  }
+
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+  const audio = state.pocketAudio || new Audio();
+  state.pocketAudio = audio;
+  audio.src = clipPath;
+  audio.currentTime = 0;
+  audio.onended = resetPocketTtsUi;
+  audio.onerror = () => {
+    resetPocketTtsUi();
+    showToast('Pocket TTS audio could not be played. Using browser voice instead.', 'alert');
+    speakText("Hi, I'm Dosi. I'll guide you step by step when it is time for your medication.");
+  };
+
+  state.isPocketTtsPlaying = true;
+  if (dom.btnPocketTts) dom.btnPocketTts.classList.add('speaking');
+  if (dom.pocketTtsBtnLabel) dom.pocketTtsBtnLabel.textContent = 'Stop Dosi ⏹';
+
+  audio.play().catch(() => {
+    resetPocketTtsUi();
+    showToast('Tap the Dosi voice button again to allow audio playback.', 'info');
+  });
+  return true;
+}
+
 function speakText(text) {
+  const isDemoEmbed = new URLSearchParams(window.location.search).has('demoEmbed');
+  if (isDemoEmbed || window.__dosetteDemoSuppressSpeech) {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    return;
+  }
+
   if (!('speechSynthesis' in window)) {
     showToast('Speech synthesis not supported in this browser.', 'alert');
     return;
   }
 
+  stopPocketTts();
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
@@ -2420,6 +2481,9 @@ function setupEventListeners() {
   });
 
   dom.btnToggleCamera.addEventListener('click', toggleWebcam);
+  if (dom.btnPocketTts) {
+    dom.btnPocketTts.addEventListener('click', () => playPocketTtsClip('dosiIntro'));
+  }
   dom.btnSpeech.addEventListener('click', toggleMedExplanationSpeech);
 
   // Patient Emergency Calls — one helper wired to every call button on the
@@ -2542,4 +2606,3 @@ window.triggerAlertAction = triggerAlertAction;
 window.loadInitialData = loadInitialData;
 window.renderAll = renderAll;
 window.renderLockscreenNotifications = renderLockscreenNotifications;
-

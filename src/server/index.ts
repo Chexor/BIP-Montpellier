@@ -22,6 +22,7 @@ const PUBLIC_DIR = path.resolve(__dirname, '../../public');
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const HOST = process.env.HOST || '127.0.0.1';
 
 // Set of connected SSE clients
 const sseClients = new Set<http.ServerResponse>();
@@ -89,6 +90,7 @@ const MIME_TYPES: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
+  '.wav': 'audio/wav',
 };
 
 const server = http.createServer(async (req, res) => {
@@ -576,7 +578,10 @@ function resolveMedication(rawBarcode: string, medications: import('../types/ind
   }
 
   // --- STATIC FILE SERVING ---
-  let filePath = path.join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
+  const staticPathname = pathname === '/'
+    ? '/demo.html'
+    : (pathname === '/app' || pathname === '/app/' ? '/index.html' : pathname);
+  let filePath = path.join(PUBLIC_DIR, staticPathname);
 
   if (!filePath.startsWith(PUBLIC_DIR)) {
     res.writeHead(403);
@@ -609,11 +614,11 @@ function resolveMedication(rawBarcode: string, medications: import('../types/ind
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`\n======================================================`);
   console.log(`🌟 DOSETTE Smart Pillbox & AI Companion Web Server`);
-  console.log(`📡 URL:      http://localhost:${PORT}`);
-  console.log(`⚡ API:      http://localhost:${PORT}/api/status`);
+  console.log(`📡 URL:      http://${HOST}:${PORT}`);
+  console.log(`⚡ API:      http://${HOST}:${PORT}/api/status`);
   console.log(`🔄 Realtime: SSE Active (/api/events)`);
   console.log(`======================================================\n`);
 });

@@ -187,7 +187,7 @@ html, body {
 
 /* ---------- Panel C — walkthrough controls ---------- */
 .panel-c { display: flex; flex-direction: column; }
-.c-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex: 0 0 auto; }
+.c-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; flex: 0 0 auto; }
 .c-kicker {
   font-family: var(--font-display);
   font-size: 9px; letter-spacing: .14em; font-weight: 800;
@@ -205,6 +205,44 @@ html, body {
   cursor: pointer; transition: background .15s;
 }
 .btn-reset:hover { background: rgba(255, 255, 255, 0.14); }
+
+.demo-voice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.btn-voice {
+  border: 1px solid rgba(13, 148, 136, 0.42);
+  background: rgba(13, 148, 136, 0.14);
+  color: #9decdd;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+
+.btn-voice:hover {
+  border-color: var(--primary-teal);
+  background: rgba(13, 148, 136, 0.25);
+  color: #fff;
+}
+
+.btn-voice.is-playing {
+  border-color: var(--primary-teal-hover);
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(13, 148, 136, 0.35), 0 0 14px var(--primary-teal-glow);
+}
+
+.btn-voice.is-muted {
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-muted);
+}
 
 .c-groups { display: flex; flex-wrap: wrap; gap: 12px 16px; flex: 1 1 auto; min-height: 0; align-content: flex-start; }
 .c-group { flex: 1 1 190px; min-width: 0; }
@@ -361,7 +399,7 @@ html, body {
 }
 
 /* ---------- responsive: below this, allow scrolling ---------- */
-@media (max-width: 1040px), (max-height: 620px) {
+@media (max-width: 760px) {
   html, body { overflow: auto; }
   .stage {
     height: auto;
