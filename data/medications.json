@@ -31,28 +31,42 @@
     "id": "med_003",
     "barcode": "3400930000003",
     "brand_name": "Asaflow 80mg",
-    "generic_name": "Acetylsalicylzuur",
+    "generic_name": "Acetylsalicylic Acid",
     "ai_explanation": {
-      "summary": "Blood thinner to prevent blood clots and protect your heart and blood vessels.",
-      "simple_instructions": "Take 1 tablet daily with a large glass of water, preferably during a meal.",
-      "warnings": "Take with food to protect stomach. Avoid other NSAID pain relievers."
+      "summary": "A low dose of aspirin that helps prevent blood clots and protects the heart.",
+      "simple_instructions": "Take 1 tablet each morning with food.",
+      "warnings": "Tell your doctor before any surgery or dental work."
     },
     "dosage": "1 tablet",
-    "color": "pink",
+    "color": "white",
     "shape": "round"
   },
   {
     "id": "med_004",
     "barcode": "5413787000018",
-    "brand_name": "Amoxicilline 500mg",
+    "brand_name": "Amoxicillin 500mg",
     "generic_name": "Amoxicillin Trihydrate",
     "ai_explanation": {
-      "summary": "Broad-spectrum antibiotic prescribed to treat bacterial infections.",
-      "simple_instructions": "Take 1 capsule every 8 hours with a full glass of water. Complete the entire course.",
-      "warnings": "Take with meals if stomach upset occurs. Do not stop taking early even if feeling better."
+      "summary": "A broad-spectrum antibiotic that treats bacterial infections.",
+      "simple_instructions": "Take 1 capsule every 8 hours with water. Finish the whole course.",
+      "warnings": "Keep taking it even if you feel better. Take with food if it upsets your stomach."
     },
     "dosage": "1 capsule",
     "color": "yellow",
     "shape": "capsule"
+  },
+  {
+    "id": "med_005",
+    "barcode": "3400930000005",
+    "brand_name": "Metoprolol 50mg",
+    "generic_name": "Metoprolol Tartrate",
+    "ai_explanation": {
+      "summary": "Slows the heart rate and lowers blood pressure to ease strain on the heart.",
+      "simple_instructions": "Take 1 tablet in the evening with food.",
+      "warnings": "Do not stop suddenly. Stand up slowly to avoid dizziness."
+    },
+    "dosage": "1 tablet",
+    "color": "white",
+    "shape": "round"
   }
 ]
