@@ -152,7 +152,6 @@ const dom = {
   speechBtnLabel: document.getElementById('speech-btn-label'),
   guidanceText: document.getElementById('guidance-text'),
   selectTargetCompartment: document.getElementById('select-target-compartment'),
-  btnQuickFill: document.getElementById('btn-quick-fill'),
 
   // Patient Inbox & Emergency Contacts
   patientInboxList: document.getElementById('patient-inbox-list'),
@@ -1775,24 +1774,8 @@ function displayMedicationExplanation(med) {
 
   if (assignedComp) {
     dom.guidanceText.innerHTML = `Caregiver assignment: <strong>Compartment ${assignedComp.compartment_index} (${assignedComp.label})</strong>.`;
-    if (dom.btnQuickFill) {
-      dom.btnQuickFill.style.display = 'inline-block';
-      dom.btnQuickFill.textContent = `Load into Box #${assignedComp.compartment_index} 📥`;
-      dom.btnQuickFill.onclick = async () => {
-        await fillCompartmentAction(assignedComp.compartment_index, med.id);
-        activateTab('tab-cg-pillbox');
-      };
-    }
   } else {
     dom.guidanceText.innerHTML = `No fixed compartment assigned. You can load this into an empty compartment.`;
-    if (dom.btnQuickFill) {
-      dom.btnQuickFill.style.display = 'inline-block';
-      dom.btnQuickFill.textContent = `Load into Compartment 2 📥`;
-      dom.btnQuickFill.onclick = async () => {
-        await fillCompartmentAction(2, med.id);
-        activateTab('tab-cg-pillbox');
-      };
-    }
   }
 }
 

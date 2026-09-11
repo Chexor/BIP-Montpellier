@@ -1,18 +1,5 @@
 [
   {
-    "id": "msg_1789058707676_608",
-    "from": "SYSTEM_PILLBOX",
-    "to": "CAREGIVER",
-    "sender_name": "Dosette Smart Pillbox",
-    "title": "Medication Taken on Time",
-    "content": "John Dupont opened Compartment 3 (Today · Evening) and took 4 tablets (Lipitor 20mg, Asaflow 80mg, Amoxicillin 500mg, Metoprolol 50mg) on schedule.",
-    "type": "CONFIRMATION",
-    "timestamp": "2026-09-10T16:45:07.676Z",
-    "read": false,
-    "medication_name": "4 tablets (Lipitor 20mg, Asaflow 80mg, Amoxicillin 500mg, Metoprolol 50mg)",
-    "compartment_index": 3
-  },
-  {
     "id": "msg_001",
     "from": "CAREGIVER",
     "to": "PATIENT",

@@ -91,7 +91,12 @@ function stripChrome(key) {
       '.smartphone-frame{max-width:none!important;position:relative!important}' +
       'body{overflow-x:hidden}' +
       /* device: compact the screen so it fits its panel with no scroll */
-      'body.role-device .device-screen-view{min-height:0!important;padding:.7rem .8rem 1rem!important;gap:.55rem!important;justify-content:flex-start!important}' +
+      'body.role-device .device-screen-view{position:relative!important;min-height:0!important;padding:.7rem .8rem 1rem!important;gap:.55rem!important;justify-content:flex-start!important}' +
+      /* product-concept photo docked in the unused strip below the phone content
+         (the smartphone-frame is taller than .phone-content-area) — its size is
+         computed in JS from that real gap, so it's as big as possible there
+         without ever overlapping the wheel; only position/looks are set here */
+      '#demo-device-photo{position:absolute!important;right:.5rem!important;bottom:.5rem!important;border-radius:.6rem!important;box-shadow:0 4px 12px rgba(15,23,42,.25)!important;pointer-events:none!important;z-index:2!important}' +
       'body.role-device .device-dose-screen{width:min(60%,12.5rem)!important}' +
       /* idle wheel: shrink the disc, its petals and the hub so it fits the panel */
       'body.role-device .device-wheel{width:min(46%,9rem)!important;border-width:.4rem!important;margin-top:1.6rem!important}' +
@@ -128,6 +133,31 @@ function stripChrome(key) {
       /* Full lockscreen display in demo console embed */
       '#phone-lockscreen:not(.hidden){display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:100%!important;z-index:99999!important;border-radius:0!important;overflow-y:auto!important;opacity:1!important;transform:none!important;pointer-events:auto!important}';
     d.head.appendChild(st);
+  }
+
+  // Tuck the product-concept photo into the empty strip at the bottom of the
+  // device card (below .phone-content-area, inside .smartphone-frame) — real
+  // unused space, so it never covers the wheel, dose screen or its buttons.
+  // Sized in JS from that actual gap so it's as large as the space allows.
+  if (key === 'device') {
+    const frame = d.querySelector('.smartphone-frame');
+    const contentArea = d.querySelector('.phone-content-area');
+    if (frame) {
+      let img = d.getElementById('demo-device-photo');
+      if (!img) {
+        img = d.createElement('img');
+        img.id = 'demo-device-photo';
+        img.src = '/assets/images/productwithavatar.png';
+        img.alt = 'Dosette physical product concept with the Dosi mascot';
+        frame.appendChild(img);
+      }
+      const frameRect = frame.getBoundingClientRect();
+      const gap = contentArea ? frameRect.height - contentArea.getBoundingClientRect().height : 0;
+      const h = Math.max(48, Math.floor((gap || frameRect.height * 0.22) * 0.92) - 8);
+      img.style.height = `${h}px`;
+      img.style.width = 'auto';
+      img.style.maxWidth = `${Math.floor(frameRect.width * 0.88)}px`;
+    }
   }
 }
 

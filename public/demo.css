@@ -55,7 +55,7 @@ html, body {
   padding: 12px 14px;
   display: grid;
   gap: 10px;
-  grid-template-columns: minmax(0, 1fr) minmax(270px, 345px) minmax(320px, 400px);
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px) minmax(300px, 380px);
   grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:
     "a d e"
@@ -174,9 +174,7 @@ html, body {
 .frame-wrap iframe { display: block; width: 100%; height: 100%; border: 0; }
 /* fixed heights removed — wrappers flex to fill the row; caps keep the proportions */
 .frame-tall, .frame-a { flex: 1 1 auto; min-height: 0; }
-.panel-a .frame-wrap { width: 100%; max-width: 640px; margin-inline: auto; }   /* the display: wider */
-.panel-d .frame-wrap { width: 100%; max-width: 330px; margin-inline: auto; }   /* John's phone: narrow portrait */
-.panel-e .frame-wrap { width: 100%; max-width: 384px; margin-inline: auto; }   /* Sophie's app: a touch wider so nothing clips */
+.panel-d .frame-wrap, .panel-e .frame-wrap { width: 100%; max-width: 350px; margin-inline: auto; }   /* phones: same size */
 
 .panel-a.is-focus .frame-wrap,
 .panel-d.is-focus .frame-wrap,

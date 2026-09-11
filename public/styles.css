@@ -1629,18 +1629,6 @@ body.mode-desktop-split .mobile-bottom-nav {
   color: #fff;
 }
 
-.btn-quick-fill {
-  padding: 0.45rem 0.85rem;
-  background: var(--accent-emerald);
-  color: #032014;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  font-size: calc(0.8rem * var(--font-scale));
-  cursor: pointer;
-  white-space: nowrap;
-}
-
 /* ===================================================================
    INBOX & MESSAGING (PERSISTENT WITHOUT DB)
    =================================================================== */
@@ -3926,11 +3914,6 @@ body.role-patient #role-view-patient .guidance-desc {
   color: #065f46;
 }
 
-body.role-patient #role-view-patient .btn-quick-fill {
-  background: #059669;
-  color: #ffffff;
-}
-
 /* Patient Inbox */
 body.role-patient #role-view-patient .inbox-card {
   background: #ffffff;
@@ -5493,29 +5476,6 @@ body.role-patient #role-view-patient .btn-call-emergency {
     border-color: #0284c7;
     outline: none;
     box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
-  }
-
-  body.role-caregiver .btn-quick-fill {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    font-size: 0.92rem;
-    font-weight: 800;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
-    transition: all 0.2s ease;
-  }
-
-  body.role-caregiver .btn-quick-fill:hover {
-    background: #047857;
-    transform: translateY(-1px);
   }
 
 /* ===================================================================

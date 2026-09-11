@@ -14,11 +14,11 @@
     {
       "id": "log_102",
       "scheduled_time": "2026-09-08T19:00:00Z",
-      "actual_time": "2026-09-10T16:45:07.672Z",
+      "actual_time": null,
       "compartment_index": 3,
       "medication_name": "Lipitor 20mg",
-      "status": "TAKEN_ON_TIME",
-      "caregiver_notified": true
+      "status": "PENDING",
+      "caregiver_notified": false
     }
   ]
 }
